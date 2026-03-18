@@ -6,7 +6,7 @@ import {
   Database, FileText, ShieldCheck, Search, Calculator,
   ClipboardList, Sparkles, Play, Loader2, CheckCircle2,
   XCircle, ArrowRight, ChevronDown, ChevronUp, Zap,
-  Clock, AlertTriangle,
+  Clock, AlertTriangle, HeartPulse,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -173,6 +173,24 @@ const RUNNERS: Record<string, Runner> = {
       },
     };
   },
+
+  health: async () => {
+    const res = await fetch('/api/agents/health');
+    const data = await res.json();
+    const healthySystems = data.systems.filter((s: { status: string }) => s.status === 'HEALTHY' || s.status === 'RECOVERED').length;
+    const downSystems = data.systems.filter((s: { status: string }) => s.status === 'DOWN').length;
+    return {
+      summary: `System health: ${data.overallStatus}. ${healthySystems}/${data.systems.length} source systems healthy. ${data.healingActionsCount} self-healing action(s) taken. ${data.cacheHits} cache fallback(s). ${data.recommendation}`,
+      details: {
+        'Overall Status': data.overallStatus,
+        'Healthy Systems': `${healthySystems} / ${data.systems.length}`,
+        'Self-Healing Actions': data.healingActionsCount,
+        'Cache Fallbacks': data.cacheHits,
+        'Agents Monitored': data.agentStatus?.length ?? 0,
+        'Checked At': new Date(data.checkedAt).toLocaleTimeString(),
+      },
+    };
+  },
 };
 
 /* ─── Agent definitions ───────────────────────────────── */
@@ -281,6 +299,20 @@ const AGENT_GROUPS: { label: string; agents: AgentDef[] }[] = [
         description: 'DAS → Summarizer + Policy + Tax Classifier (parallel) → RAG Agent. Produces the full Session Brief with all agent outputs in one pass.',
         btnLabel: 'Run Full Pipeline',
         linkTo: '/session-brief', linkLabel: 'View Session Brief →',
+      },
+    ],
+  },
+  {
+    label: 'Platform Health',
+    agents: [
+      {
+        id: 'health', runnerId: 'health',
+        name: 'Self-Healing API Agent', plane: 'Orchestration Plane', actionType: 'READ',
+        icon: HeartPulse, iconBg: '#F0FDF4', iconColor: '#16A34A',
+        useCase: 'Monitor all source systems and agents — retry on failure, fall back to cache',
+        description: 'Pings all 6 source system integrations and 7 internal agents. Detects failures, retries with exponential backoff (up to 3 attempts), falls back to cached data, and logs all recovery actions to the governance store.',
+        btnLabel: 'Run Health Check',
+        linkTo: '/governance', linkLabel: 'View Recovery Log →',
       },
     ],
   },

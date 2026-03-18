@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
-import { Loader2, CheckCircle2, AlertTriangle, FileText, TrendingUp, Shield, Search, Calculator, Clock, RefreshCw } from 'lucide-react';
+import { Loader2, CheckCircle2, AlertTriangle, FileText, TrendingUp, Shield, Search, Calculator, Clock, RefreshCw, BookOpen, ChevronDown, ChevronUp, Check } from 'lucide-react';
 import ClientBanner from '@/components/ui/ClientBanner';
+import { clientHistory } from '@/data/mock/expert-sessions';
 
 interface PipelineResult {
   summary: {
@@ -242,14 +243,136 @@ export default function SessionBrief() {
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
                   <button className="btn-primary text-xs px-3 py-1.5">Approve</button>
-                  <button className="btn-secondary text-xs px-3 py-1.5">Defer</button>
+                  <button className="btn-secondary text-xs px-3 py-1.5">Override</button>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
+        {/* Communication History with Sarah */}
+        <CommunicationHistorySection clientId="CLIENT-001" />
+
       </div>
     </div>
+  );
+}
+
+function CommunicationHistorySection({ clientId }: { clientId: string }) {
+  const history = clientHistory[clientId];
+  const [expanded, setExpanded] = useState(false);
+  if (!history) return null;
+
+  const lastSession = history.communications[0];
+
+  return (
+    <section className="card overflow-hidden">
+      <button
+        onClick={() => setExpanded(v => !v)}
+        className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-colors"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-[var(--intuit-blue-light)] flex items-center justify-center">
+            <BookOpen size={15} className="text-[var(--intuit-blue)]" />
+          </div>
+          <div>
+            <div className="font-semibold text-[var(--text-primary)]">Communication History — {history.clientName}</div>
+            <div className="text-xs text-[var(--text-muted)] mt-0.5">
+              {history.communications.length} prior sessions · {history.openActionItems.length} open action items
+            </div>
+          </div>
+        </div>
+        {expanded ? <ChevronUp size={16} className="text-[var(--text-muted)]" /> : <ChevronDown size={16} className="text-[var(--text-muted)]" />}
+      </button>
+
+      {/* Open Action Items — always visible */}
+      {history.openActionItems.length > 0 && (
+        <div className="px-5 pb-4 border-t border-[var(--border-color)]">
+          <div className="pt-4 mb-2">
+            <div className="flex items-center gap-1.5 mb-2">
+              <AlertTriangle size={13} className="text-amber-600" />
+              <span className="text-xs font-semibold text-amber-800">Open Action Items from Prior Sessions</span>
+            </div>
+            <ul className="space-y-2">
+              {history.openActionItems.map((item, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  <span className="text-amber-400 shrink-0 mt-0.5">→</span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+          {lastSession && !expanded && (
+            <div className="mt-3 p-3 rounded-lg bg-slate-50 border border-[var(--border-color)]">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-semibold text-[var(--text-secondary)]">Last Session</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-600">{lastSession.date}</span>
+              </div>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{lastSession.summary}</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Full history */}
+      {expanded && (
+        <div className="border-t border-[var(--border-color)] p-5">
+          <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-5">Full Session Log</div>
+          <div className="space-y-7">
+            {history.communications.map((comm, idx) => (
+              <div key={idx} className="relative pl-6 border-l-2 border-slate-200">
+                <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-[var(--intuit-blue)] border-2 border-white" />
+                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                  <span className="text-xs font-semibold text-[var(--text-primary)]">{comm.date}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">{comm.type}</span>
+                </div>
+                <p className="text-sm text-[var(--text-secondary)] mb-3 leading-relaxed">{comm.summary}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <div className="font-semibold text-[var(--text-secondary)] mb-1.5">Topics Discussed</div>
+                    <ul className="space-y-1">
+                      {comm.topicsDiscussed.map((t, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-[var(--text-muted)]">
+                          <span className="text-[var(--intuit-blue)] shrink-0">·</span>{t}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <div className="font-semibold text-[var(--text-secondary)] mb-1.5">Action Items / Next Steps</div>
+                    <ul className="space-y-1">
+                      {comm.actionItems.map((a, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-amber-700">
+                          <span className="text-amber-500 shrink-0">→</span>{a}
+                        </li>
+                      ))}
+                    </ul>
+                    {comm.completedItems && comm.completedItems.length > 0 && (
+                      <div className="mt-2">
+                        <div className="font-semibold text-[var(--text-secondary)] mb-1">Completed ✓</div>
+                        <ul className="space-y-1">
+                          {comm.completedItems.map((c, i) => (
+                            <li key={i} className="flex items-start gap-1.5 text-green-700">
+                              <Check size={11} className="shrink-0 mt-0.5" />{c}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {history.keyContext && (
+            <div className="mt-6 p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="text-xs font-semibold text-blue-800 mb-1">Client Context Note</div>
+              <p className="text-xs text-blue-700">{history.keyContext}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
   );
 }

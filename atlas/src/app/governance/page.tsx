@@ -89,7 +89,7 @@ export default function Governance() {
                         <CheckCircle2 size={13} />Approve
                       </button>
                       <button onClick={() => approve(entry.logId, 'reject')} className="btn-secondary text-xs px-3 py-1.5">
-                        <XCircle size={13} />Reject
+                        <XCircle size={13} />Override
                       </button>
                     </div>
                   </div>
@@ -159,7 +159,7 @@ export default function Governance() {
                       {entry.expertApproved === true ? (
                         <span className="flex items-center gap-1 text-green-600 text-xs font-semibold"><CheckCircle2 size={11} />Approved</span>
                       ) : entry.expertApproved === false ? (
-                        <span className="flex items-center gap-1 text-red-600 text-xs font-semibold"><XCircle size={11} />Rejected</span>
+                        <span className="flex items-center gap-1 text-red-600 text-xs font-semibold"><XCircle size={11} />Overridden</span>
                       ) : entry.expertReviewRequired ? (
                         <span className="flex items-center gap-1 text-amber-600 text-xs font-semibold"><Clock size={11} />Pending</span>
                       ) : (

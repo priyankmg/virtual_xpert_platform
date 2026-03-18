@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   X, LayoutDashboard, Database, FileText, ShieldCheck,
-  Search, Calculator, ClipboardList, Bot, Zap, Star,
+  Search, Calculator, ClipboardList, Bot, Zap, Star, BarChart2,
 } from 'lucide-react';
 
 const navItems = [
@@ -16,6 +16,7 @@ const navItems = [
   { href: '/tax-estimate', label: 'Tax Estimate', icon: Calculator, section: 'client' },
   { href: '/governance', label: 'Governance Log', icon: ClipboardList, section: 'platform' },
   { href: '/agents', label: 'Agent Panel', icon: Bot, section: 'platform' },
+  { href: '/my-metrics', label: 'My Metrics', icon: BarChart2, section: 'platform' },
 ];
 
 const expertSectionItems = navItems.filter(i => i.section === 'expert');

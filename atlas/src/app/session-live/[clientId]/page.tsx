@@ -413,7 +413,7 @@ export default function SessionLivePage() {
                       )}
                       {item.status === 'REJECTED' && (
                         <span className="text-xs text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-full shrink-0">
-                          Rejected
+                          Overridden
                         </span>
                       )}
                     </div>
@@ -430,7 +430,7 @@ export default function SessionLivePage() {
                           onClick={() => handleGovAction(item.id, 'reject')}
                           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-300 transition-colors"
                         >
-                          Reject
+                          Override
                         </button>
                       </div>
                     )}

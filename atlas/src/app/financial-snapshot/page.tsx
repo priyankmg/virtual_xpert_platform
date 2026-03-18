@@ -2,18 +2,78 @@
 
 import { useState } from 'react';
 import Header from '@/components/layout/Header';
-import { RefreshCw, Loader2, AlertTriangle, XCircle } from 'lucide-react';
+import { RefreshCw, Loader2, AlertTriangle, XCircle, Users, ChevronDown, Check, Building2 } from 'lucide-react';
 import { quickbooksData } from '@/data/mock/quickbooks';
 import { adpPayrollData } from '@/data/mock/adp-payroll';
 import { expensifyData } from '@/data/mock/expensify';
 import { stripeData } from '@/data/mock/stripe';
 import { inventoryData } from '@/data/mock/inventory';
+import { todaySessions } from '@/data/mock/expert-sessions';
+import { useSelectedClient } from '@/components/layout/AppShell';
 
 type Tab = 'overview' | 'accounting' | 'payroll' | 'expenses' | 'revenue' | 'inventory';
 
 function fmt(n: number) { return '$' + n.toLocaleString(); }
 
+// Intuit logo badge
+function IntuitBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#0077C5] text-white">
+      intuit
+    </span>
+  );
+}
+
+function ThirdPartyBadge({ name }: { name: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-slate-200">
+      3rd party
+    </span>
+  );
+}
+
+const SOURCE_SYSTEMS = [
+  {
+    name: 'QuickBooks Online',
+    owner: 'intuit',
+    description: 'Chart of accounts, P&L, balance sheet, transactions',
+    icon: '📊',
+  },
+  {
+    name: 'ADP Payroll',
+    owner: 'third-party',
+    description: 'Payroll register, employer taxes, benefits deductions',
+    icon: '👥',
+  },
+  {
+    name: 'Expensify',
+    owner: 'third-party',
+    description: 'Approved expense reports, flagged items',
+    icon: '🧾',
+  },
+  {
+    name: 'Stripe',
+    owner: 'third-party',
+    description: 'Gross revenue, refunds, processing fees, 1099-K tracking',
+    icon: '💳',
+  },
+  {
+    name: 'Legacy Inventory System',
+    owner: 'third-party',
+    description: 'Inventory valuation, COGS, write-downs',
+    icon: '📦',
+  },
+  {
+    name: 'Prior Year Tax Returns',
+    owner: 'intuit',
+    description: 'TurboTax Business — Form 1120-S, prior 3 years',
+    icon: '📋',
+  },
+];
+
 export default function FinancialSnapshot() {
+  const { selectedClient, setSelectedClient } = useSelectedClient();
+  const [clientSelectorOpen, setClientSelectorOpen] = useState(false);
   const [tab, setTab] = useState<Tab>('overview');
   const [refreshing, setRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
@@ -53,6 +113,79 @@ export default function FinancialSnapshot() {
       />
 
       <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-5">
+
+        {/* Client Selector */}
+        <div className="card p-4 flex items-center gap-4 flex-wrap justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-[var(--intuit-blue-light)] flex items-center justify-center">
+              <Building2 size={16} className="text-[var(--intuit-blue)]" />
+            </div>
+            <div>
+              <div className="text-xs text-[var(--text-muted)] font-medium">Viewing financial data for</div>
+              <div className="text-sm font-semibold text-[var(--text-primary)]">
+                {selectedClient ? selectedClient.clientName : 'Meridian Home Goods'}
+                {selectedClient && <span className="ml-2 text-xs text-[var(--text-muted)] font-normal">· {selectedClient.entityType}</span>}
+              </div>
+            </div>
+          </div>
+          <div className="relative">
+            <button
+              onClick={() => setClientSelectorOpen(v => !v)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-white text-sm text-[var(--text-secondary)] hover:border-[var(--intuit-blue)] hover:text-[var(--intuit-blue)] transition-all"
+            >
+              <Users size={13} />
+              Switch Client
+              <ChevronDown size={13} className={clientSelectorOpen ? 'rotate-180 transition-transform' : 'transition-transform'} />
+            </button>
+            {clientSelectorOpen && (
+              <div className="absolute right-0 top-full mt-1.5 w-64 bg-white border border-[var(--border-color)] rounded-xl shadow-lg z-50 overflow-hidden">
+                <div className="p-2 border-b border-[var(--border-color)]">
+                  <div className="text-xs font-semibold text-[var(--text-muted)] px-2 py-1">Select client to view data for</div>
+                </div>
+                {todaySessions.map(s => (
+                  <button
+                    key={s.clientId}
+                    onClick={() => {
+                      setSelectedClient({ clientId: s.clientId, clientName: s.clientName, entityType: s.entityType, sessionId: s.sessionId, sessionTopic: s.topic });
+                      setClientSelectorOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-50 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-[var(--text-primary)] truncate">{s.clientName}</div>
+                      <div className="text-xs text-[var(--text-muted)]">{s.entityType} · {s.scheduledTime}</div>
+                    </div>
+                    {selectedClient?.clientId === s.clientId && <Check size={13} className="text-[var(--intuit-blue)] shrink-0" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Authorized Systems */}
+        <div className="card p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-2 h-2 rounded-full bg-green-500" />
+            <h3 className="text-sm font-semibold text-[var(--text-primary)]">
+              The client has authorized Atlas access to the following systems
+            </h3>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {SOURCE_SYSTEMS.map(sys => (
+              <div key={sys.name} className="flex items-start gap-3 p-3 rounded-lg bg-slate-50 border border-[var(--border-color)]">
+                <span className="text-lg shrink-0">{sys.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                    <span className="text-sm font-medium text-[var(--text-primary)] truncate">{sys.name}</span>
+                    {sys.owner === 'intuit' ? <IntuitBadge /> : <ThirdPartyBadge name={sys.name} />}
+                  </div>
+                  <p className="text-xs text-[var(--text-muted)] leading-relaxed">{sys.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Flags */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

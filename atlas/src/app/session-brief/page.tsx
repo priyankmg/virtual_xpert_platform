@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import { Loader2, CheckCircle2, AlertTriangle, FileText, TrendingUp, Shield, Search, Calculator, Clock, RefreshCw } from 'lucide-react';
+import ClientBanner from '@/components/ui/ClientBanner';
 
 interface PipelineResult {
   summary: {
@@ -80,6 +81,7 @@ export default function SessionBrief() {
           </button>
         }
       />
+      <ClientBanner />
 
       <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl w-full">
 

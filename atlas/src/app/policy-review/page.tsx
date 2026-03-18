@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import { Shield, AlertTriangle, DollarSign, Clock, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import ClientBanner from '@/components/ui/ClientBanner';
 
 interface PolicyReport {
   evaluationDate: string;
@@ -55,6 +56,7 @@ export default function PolicyReview() {
   return (
     <div className="flex-1 flex flex-col" style={{ background: 'var(--bg-page)' }}>
       <Header title="Policy Review" subtitle={`Evaluated ${new Date(data.evaluationDate).toLocaleDateString()} · 7 policy areas`} />
+      <ClientBanner />
 
       <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl w-full">
 

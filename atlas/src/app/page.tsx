@@ -1,14 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Clock, CheckCircle2, Circle, Loader2, AlertTriangle,
   ChevronRight, Play, Sparkles, Star, TrendingUp,
   Users, Calendar, ShieldCheck, Zap, BarChart3,
+  ChevronDown, Check,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
-import { SessionItem, ExpertProfile, sessionStats as mockStats } from '@/data/mock/expert-sessions';
+import { SessionItem, ExpertProfile, sessionStats as mockStats, todaySessions as mockSessions } from '@/data/mock/expert-sessions';
+import { useSelectedClient } from '@/components/layout/AppShell';
 
 const STATUS_CONFIG: Record<SessionItem['status'], {
   label: string;
@@ -38,6 +41,13 @@ const STATUS_CONFIG: Record<SessionItem['status'], {
     border: 'border-orange-200',
     icon: <ShieldCheck size={14} className="text-orange-600" />,
   },
+  BRIEF_COMPLETE: {
+    label: 'Brief Complete',
+    bg: 'bg-emerald-50',
+    text: 'text-emerald-700',
+    border: 'border-emerald-200',
+    icon: <CheckCircle2 size={14} className="text-emerald-600" />,
+  },
   NOT_STARTED: {
     label: 'Not Started',
     bg: 'bg-slate-50',
@@ -53,13 +63,100 @@ const RISK_CONFIG: Record<SessionItem['riskLevel'], { badge: string }> = {
   LOW:    { badge: 'bg-green-100 text-green-700 border border-green-200' },
 };
 
-function SessionCard({ session, onRunBrief }: { session: SessionItem; onRunBrief: (id: string) => void }) {
+function ClientSelector({ sessions, selectedId, onChange }: {
+  sessions: SessionItem[];
+  selectedId: string | null;
+  onChange: (session: SessionItem) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selected = sessions.find(s => s.clientId === selectedId);
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-color)] bg-white text-sm font-medium text-[var(--text-primary)] hover:border-[var(--intuit-blue)] hover:bg-[var(--intuit-blue-light)] transition-all shadow-sm min-w-[220px] justify-between"
+      >
+        <span className="flex items-center gap-2 truncate">
+          <Users size={14} className="text-[var(--intuit-blue)] shrink-0" />
+          {selected ? selected.clientName : 'Select a client…'}
+        </span>
+        <ChevronDown size={14} className={`text-[var(--text-muted)] transition-transform shrink-0 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open && (
+        <div className="absolute top-full mt-1.5 left-0 w-72 bg-white border border-[var(--border-color)] rounded-xl shadow-lg z-50 overflow-hidden">
+          <div className="p-2 border-b border-[var(--border-color)]">
+            <div className="text-xs font-semibold text-[var(--text-muted)] px-2 py-1">Today&apos;s Sessions</div>
+          </div>
+          <div className="py-1 max-h-64 overflow-y-auto">
+            {sessions.map(s => {
+              const status = STATUS_CONFIG[s.status];
+              const isSelected = s.clientId === selectedId;
+              return (
+                <button
+                  key={s.clientId}
+                  onClick={() => { onChange(s); setOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-50 transition-colors ${isSelected ? 'bg-[var(--intuit-blue-light)]' : ''}`}
+                >
+                  <div className={`w-2 h-2 rounded-full shrink-0 ${
+                    s.status === 'IN_PROGRESS' ? 'bg-blue-500 animate-pulse' :
+                    s.status === 'COMPLETED' ? 'bg-green-500' :
+                    s.status === 'BRIEF_COMPLETE' ? 'bg-emerald-500' :
+                    'bg-slate-300'
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-[var(--text-primary)] truncate">{s.clientName}</div>
+                    <div className="text-xs text-[var(--text-muted)] truncate">{s.scheduledTime} · {s.entityType}</div>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${status.bg} ${status.text} ${status.border}`}>
+                      {status.icon}
+                    </span>
+                    {isSelected && <Check size={13} className="text-[var(--intuit-blue)]" />}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SessionCard({ session, onRunBrief, isSelected, onSelect }: {
+  session: SessionItem;
+  onRunBrief: (id: string) => void;
+  isSelected: boolean;
+  onSelect: (session: SessionItem) => void;
+}) {
+  const router = useRouter();
   const status = STATUS_CONFIG[session.status];
   const risk = RISK_CONFIG[session.riskLevel];
   const isActive = session.status === 'IN_PROGRESS';
 
+  function handlePrepare() {
+    onSelect(session);
+    router.push(`/session-prep/${session.clientId}`);
+  }
+
   return (
-    <div className={`card transition-all hover:shadow-md ${isActive ? 'ring-2 ring-[var(--intuit-blue)] ring-offset-1' : ''}`}>
+    <div
+      className={`card transition-all hover:shadow-md cursor-pointer ${
+        isActive ? 'ring-2 ring-[var(--intuit-blue)] ring-offset-1' :
+        isSelected ? 'ring-2 ring-[var(--intuit-orange)] ring-offset-1' : ''
+      }`}
+      onClick={() => onSelect(session)}
+    >
       <div className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex-1 min-w-0">
@@ -75,6 +172,12 @@ function SessionCard({ session, onRunBrief }: { session: SessionItem; onRunBrief
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700 border border-red-200">
                   <AlertTriangle size={10} />
                   {session.pendingActions} pending
+                </span>
+              )}
+              {isSelected && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 border border-orange-200">
+                  <Check size={10} />
+                  Active Client
                 </span>
               )}
             </div>
@@ -102,6 +205,7 @@ function SessionCard({ session, onRunBrief }: { session: SessionItem; onRunBrief
           {session.status === 'IN_PROGRESS' && (
             <Link
               href={`/session-live/${session.clientId}`}
+              onClick={e => e.stopPropagation()}
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--intuit-blue)] text-white text-sm font-medium hover:bg-[var(--intuit-blue-dark)] transition-colors"
             >
               <Zap size={14} />
@@ -110,16 +214,27 @@ function SessionCard({ session, onRunBrief }: { session: SessionItem; onRunBrief
           )}
           {(session.status === 'PREP_READY' || session.status === 'NOT_STARTED') && (
             <button
-              onClick={() => onRunBrief(session.clientId)}
+              onClick={e => { e.stopPropagation(); handlePrepare(); }}
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--intuit-blue)] text-white text-sm font-medium hover:bg-[var(--intuit-blue-dark)] transition-colors"
             >
               <Play size={13} />
-              {session.briefReady ? 'View Brief' : 'Generate Brief'}
+              Prepare for Session
             </button>
+          )}
+          {session.status === 'BRIEF_COMPLETE' && (
+            <Link
+              href={`/session-prep/${session.clientId}`}
+              onClick={e => e.stopPropagation()}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors"
+            >
+              <CheckCircle2 size={13} />
+              View Pre-Brief
+            </Link>
           )}
           {session.status === 'COMPLETED' && (
             <Link
               href="/session-brief"
+              onClick={e => e.stopPropagation()}
               className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 text-[var(--text-secondary)] text-sm font-medium hover:bg-slate-200 transition-colors"
             >
               View Summary
@@ -127,15 +242,11 @@ function SessionCard({ session, onRunBrief }: { session: SessionItem; onRunBrief
           )}
           <Link
             href="/financial-snapshot"
+            onClick={e => { e.stopPropagation(); onSelect(session); }}
             className="flex items-center justify-center px-3 py-2 rounded-lg bg-slate-100 text-[var(--text-secondary)] text-sm font-medium hover:bg-slate-200 transition-colors"
+            title="Financial Snapshot"
           >
             <BarChart3 size={14} />
-          </Link>
-          <Link
-            href="/governance"
-            className="flex items-center justify-center px-3 py-2 rounded-lg bg-slate-100 text-[var(--text-secondary)] text-sm font-medium hover:bg-slate-200 transition-colors"
-          >
-            <ShieldCheck size={14} />
           </Link>
         </div>
       </div>
@@ -144,46 +255,62 @@ function SessionCard({ session, onRunBrief }: { session: SessionItem; onRunBrief
 }
 
 export default function DashboardPage() {
-  const [sessions, setSessions] = useState<SessionItem[]>([]);
+  const { selectedClient, setSelectedClient } = useSelectedClient();
+  const [sessions, setSessions] = useState<SessionItem[]>(mockSessions);
   const [expert, setExpert] = useState<ExpertProfile | null>(null);
   const [stats, setStats] = useState(mockStats);
   const [loading, setLoading] = useState(true);
   const [briefRunning, setBriefRunning] = useState<string | null>(null);
-  const [briefResult, setBriefResult] = useState<{ clientId: string; status: 'done' | 'error' } | null>(null);
 
   useEffect(() => {
     fetch('/api/expert/sessions')
       .then(r => r.json())
       .then(data => {
-        setSessions(data.sessions || []);
+        setSessions(data.sessions || mockSessions);
         setExpert(data.expert || null);
         setStats(data.stats || mockStats);
       })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   async function handleRunBrief(clientId: string) {
     setBriefRunning(clientId);
-    setBriefResult(null);
     try {
       await fetch('/api/agents/orchestrate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ clientId }),
       });
-      setBriefResult({ clientId, status: 'done' });
-    } catch {
-      setBriefResult({ clientId, status: 'error' });
-    } finally {
-      setBriefRunning(null);
-    }
+    } catch {}
+    finally { setBriefRunning(null); }
+  }
+
+  function handleSelectSession(session: SessionItem) {
+    setSelectedClient({
+      clientId: session.clientId,
+      clientName: session.clientName,
+      entityType: session.entityType,
+      sessionId: session.sessionId,
+      sessionTopic: session.topic,
+      briefStatus: session.status as 'NOT_STARTED' | 'BRIEF_COMPLETE' | 'IN_PROGRESS' | 'COMPLETED',
+    });
   }
 
   const activeSession = sessions.find(s => s.status === 'IN_PROGRESS');
 
   return (
     <>
-      <Header title="Expert Dashboard" />
+      <Header
+        title="Expert Dashboard"
+        action={
+          <ClientSelector
+            sessions={sessions}
+            selectedId={selectedClient?.clientId ?? null}
+            onChange={handleSelectSession}
+          />
+        }
+      />
       <main className="flex-1 p-4 sm:p-6 max-w-6xl mx-auto w-full">
 
         {/* Expert Hero */}
@@ -267,6 +394,30 @@ export default function DashboardPage() {
           </div>
         )}
 
+        {/* Selected Client Banner */}
+        {selectedClient && (
+          <div className="mb-6 p-3.5 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-between gap-4 flex-wrap text-sm">
+            <div className="flex items-center gap-2">
+              <Check size={15} className="text-orange-600" />
+              <span className="font-medium text-orange-800">Active Client Context:</span>
+              <span className="text-orange-700">{selectedClient.clientName}</span>
+              <span className="text-orange-500">·</span>
+              <span className="text-orange-600">{selectedClient.entityType}</span>
+              {selectedClient.sessionTopic && (
+                <>
+                  <span className="text-orange-500 hidden sm:inline">·</span>
+                  <span className="text-orange-600 hidden sm:inline">{selectedClient.sessionTopic}</span>
+                </>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href="/financial-snapshot" className="text-[var(--intuit-blue)] font-medium hover:underline flex items-center gap-1 text-xs">
+                View financial data <ChevronRight size={12} />
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Session Queue */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -295,6 +446,8 @@ export default function DashboardPage() {
                   key={session.sessionId}
                   session={session}
                   onRunBrief={handleRunBrief}
+                  isSelected={selectedClient?.clientId === session.clientId}
+                  onSelect={handleSelectSession}
                 />
               ))}
             </div>
@@ -304,17 +457,6 @@ export default function DashboardPage() {
             <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-center gap-2 text-blue-700 text-sm">
               <Loader2 size={14} className="animate-spin" />
               Generating session brief… running DAS + all agents
-            </div>
-          )}
-          {briefResult?.status === 'done' && (
-            <div className="mt-4 p-3 rounded-lg bg-green-50 border border-green-200 flex items-center justify-between gap-2 text-sm">
-              <span className="flex items-center gap-2 text-green-700">
-                <CheckCircle2 size={14} />
-                Session brief ready for {sessions.find(s => s.clientId === briefResult.clientId)?.clientName}
-              </span>
-              <Link href="/session-brief" className="text-[var(--intuit-blue)] font-medium hover:underline">
-                View Brief →
-              </Link>
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
 import { AlertTriangle, Loader2, TrendingUp, TrendingDown } from 'lucide-react';
+import ClientBanner from '@/components/ui/ClientBanner';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface TaxScenario {
@@ -70,6 +71,7 @@ export default function TaxEstimate() {
         title="Tax Estimate"
         subtitle={`Tax Year ${data.taxYear} · S-Corp · California · ${(data.confidenceScore * 100).toFixed(0)}% confidence`}
       />
+      <ClientBanner />
 
       <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 max-w-5xl w-full">
 

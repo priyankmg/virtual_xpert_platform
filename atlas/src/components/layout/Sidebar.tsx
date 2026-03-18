@@ -70,18 +70,18 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       >
         {/* Logo */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <div className="flex items-center gap-3">
+          <Link href="/" onClick={onClose} className="flex items-center gap-3 group">
             <div
-              className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0"
+              className="w-9 h-9 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0 group-hover:shadow-md transition-shadow"
               style={{ background: 'linear-gradient(135deg, #0077C5, #0055A4)' }}
             >
               <Zap size={17} className="text-white" />
             </div>
             <div>
-              <div className="font-bold text-base leading-tight" style={{ color: '#1E293B' }}>Atlas</div>
+              <div className="font-bold text-base leading-tight group-hover:text-[#0077C5] transition-colors" style={{ color: '#1E293B' }}>Atlas</div>
               <div className="text-xs" style={{ color: '#94A3B8' }}>Virtual Expert Platform</div>
             </div>
-          </div>
+          </Link>
           <button
             onClick={onClose}
             className="lg:hidden p-1.5 rounded-lg hover:bg-slate-100 transition-colors"

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Header from '@/components/layout/Header';
 import { Search, X } from 'lucide-react';
+import ClientBanner from '@/components/ui/ClientBanner';
 import { irsPrecedents } from '@/data/mock/irs-precedents';
 
 interface Precedent {
@@ -46,6 +47,7 @@ export default function Precedents() {
   return (
     <div className="flex-1 flex flex-col" style={{ background: 'var(--bg-page)' }}>
       <Header title="IRS Precedent Library" subtitle="Tax Court rulings, audit cases, and IRS guidance" />
+      <ClientBanner />
 
       <div className="flex-1 p-4 sm:p-6 lg:p-8">
         {/* Search */}

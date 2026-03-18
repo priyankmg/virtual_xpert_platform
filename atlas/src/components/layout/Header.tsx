@@ -44,9 +44,9 @@ export default function Header({ title, subtitle, action }: HeaderProps) {
 
         <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors border border-slate-200">
           <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0" style={{ background: '#0077C5' }}>
-            SC
+            MR
           </div>
-          <span className="text-sm font-medium hidden md:inline" style={{ color: '#1E293B' }}>Sarah Chen</span>
+          <span className="text-sm font-medium hidden md:inline" style={{ color: '#1E293B' }}>Marcus Rivera</span>
           <ChevronDown size={13} style={{ color: '#94A3B8' }} />
         </div>
       </div>

@@ -2,18 +2,25 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { X, LayoutDashboard, Database, FileText, ShieldCheck, Search, Calculator, ClipboardList, Bot, Zap } from 'lucide-react';
+import {
+  X, LayoutDashboard, Database, FileText, ShieldCheck,
+  Search, Calculator, ClipboardList, Bot, Zap, Star,
+} from 'lucide-react';
 
 const navItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/financial-snapshot', label: 'Financial Snapshot', icon: Database },
-  { href: '/session-brief', label: 'Session Brief', icon: FileText },
-  { href: '/policy-review', label: 'Policy Review', icon: ShieldCheck },
-  { href: '/precedents', label: 'IRS Precedents', icon: Search },
-  { href: '/tax-estimate', label: 'Tax Estimate', icon: Calculator },
-  { href: '/governance', label: 'Governance Log', icon: ClipboardList },
-  { href: '/agents', label: 'Agent Status', icon: Bot },
+  { href: '/', label: 'Work Queue', icon: LayoutDashboard, section: 'expert' },
+  { href: '/financial-snapshot', label: 'Financial Snapshot', icon: Database, section: 'client' },
+  { href: '/session-brief', label: 'Session Brief', icon: FileText, section: 'client' },
+  { href: '/policy-review', label: 'Policy Review', icon: ShieldCheck, section: 'client' },
+  { href: '/precedents', label: 'IRS Precedents', icon: Search, section: 'client' },
+  { href: '/tax-estimate', label: 'Tax Estimate', icon: Calculator, section: 'client' },
+  { href: '/governance', label: 'Governance Log', icon: ClipboardList, section: 'platform' },
+  { href: '/agents', label: 'Agent Panel', icon: Bot, section: 'platform' },
 ];
+
+const expertSectionItems = navItems.filter(i => i.section === 'expert');
+const clientSectionItems = navItems.filter(i => i.section === 'client');
+const platformSectionItems = navItems.filter(i => i.section === 'platform');
 
 interface SidebarProps {
   open: boolean;
@@ -23,9 +30,24 @@ interface SidebarProps {
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
 
+  function NavLink({ href, label, icon: Icon }: { href: string; label: string; icon: typeof LayoutDashboard }) {
+    const isActive = pathname === href || pathname.startsWith(href + '/') && href !== '/';
+    const isExactActive = pathname === href;
+    const active = href === '/' ? isExactActive : isActive;
+    return (
+      <Link
+        href={href}
+        onClick={onClose}
+        className={`sidebar-nav-item ${active ? 'active' : ''}`}
+      >
+        <Icon size={16} className="flex-shrink-0" />
+        <span className="truncate">{label}</span>
+      </Link>
+    );
+  }
+
   return (
     <>
-      {/* Mobile backdrop */}
       {open && (
         <div
           className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm lg:hidden"
@@ -68,38 +90,51 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </button>
         </div>
 
-        {/* Client chip */}
+        {/* Expert chip */}
         <div className="mx-4 mt-4 mb-2 px-3 py-2.5 rounded-xl" style={{ background: '#EFF6FF', border: '1px solid #BAE0F7' }}>
-          <div className="text-xs font-medium mb-0.5" style={{ color: '#64748B' }}>Active Client</div>
-          <div className="text-sm font-semibold" style={{ color: '#1E293B' }}>Sarah Chen</div>
-          <div className="text-xs font-medium" style={{ color: '#0077C5' }}>Meridian Home Goods</div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <div className="w-6 h-6 rounded-full bg-[var(--intuit-blue)] text-white flex items-center justify-center text-xs font-semibold shrink-0">
+              MR
+            </div>
+            <div>
+              <div className="text-sm font-semibold" style={{ color: '#1E293B' }}>Marcus Rivera</div>
+              <div className="text-xs" style={{ color: '#0077C5' }}>CPA · QuickBooks ProAdvisor</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-1 mt-1.5 text-xs" style={{ color: '#64748B' }}>
+            <Star size={11} className="text-amber-400 fill-amber-400" />
+            <span>4.87 CSAT · 94% Atlas adoption</span>
+          </div>
+        </div>
+
+        {/* Active client */}
+        <div className="mx-4 mb-3 px-3 py-2 rounded-lg" style={{ background: '#FFF7ED', border: '1px solid #FED7AA' }}>
+          <div className="text-xs" style={{ color: '#92400E' }}>Active Session — 2:00 PM</div>
+          <div className="text-xs font-semibold" style={{ color: '#1E293B' }}>Meridian Home Goods</div>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-3 overflow-y-auto">
-          <div className="section-title px-3 mb-2">Navigation</div>
+        <nav className="flex-1 px-3 py-2 overflow-y-auto">
+          <div className="section-title px-3 mb-2">Expert</div>
+          <div className="space-y-0.5 mb-4">
+            {expertSectionItems.map(item => <NavLink key={item.href} {...item} />)}
+          </div>
+
+          <div className="section-title px-3 mb-2">Client Analysis</div>
+          <div className="space-y-0.5 mb-4">
+            {clientSectionItems.map(item => <NavLink key={item.href} {...item} />)}
+          </div>
+
+          <div className="section-title px-3 mb-2">Platform</div>
           <div className="space-y-0.5">
-            {navItems.map(({ href, label, icon: Icon }) => {
-              const isActive = pathname === href;
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  onClick={onClose}
-                  className={`sidebar-nav-item ${isActive ? 'active' : ''}`}
-                >
-                  <Icon size={16} className="flex-shrink-0" />
-                  <span className="truncate">{label}</span>
-                </Link>
-              );
-            })}
+            {platformSectionItems.map(item => <NavLink key={item.href} {...item} />)}
           </div>
         </nav>
 
         {/* Footer */}
         <div className="px-5 py-4 border-t border-slate-100">
           <div className="text-xs font-medium" style={{ color: '#94A3B8' }}>Intuit Virtual Expert Platform</div>
-          <div className="text-xs mt-0.5" style={{ color: '#CBD5E1' }}>Prototype v1.0 · 2025</div>
+          <div className="text-xs mt-0.5" style={{ color: '#CBD5E1' }}>Prototype v2.0 · 2025</div>
         </div>
       </aside>
     </>

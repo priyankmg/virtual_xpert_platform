@@ -19,6 +19,13 @@ export interface WeeklySessionCount {
   briefsGenerated: number;
 }
 
+export interface MonthlySessionCount {
+  month: string;          // e.g. "Oct 2024"
+  completed: number;
+  briefsGenerated: number;
+  uniqueClients: number;
+}
+
 export interface TopClient {
   clientName: string;
   entityType: string;
@@ -61,6 +68,9 @@ export interface MarcusMetrics {
 
   // Weekly trend
   weeklyTrend: WeeklySessionCount[];
+
+  // Monthly trend (last 6 months)
+  monthlyTrend: MonthlySessionCount[];
 
   // Atlas usage
   atlasAdoptionRate: number;    // briefs generated / sessions
@@ -136,6 +146,15 @@ export const marcusMetrics: MarcusMetrics = {
     { week: 'Feb 24', completed: 6, briefsGenerated: 6 },
     { week: 'Mar 3', completed: 6, briefsGenerated: 5 },
     { week: 'Mar 10', completed: 5, briefsGenerated: 5 },
+  ],
+
+  monthlyTrend: [
+    { month: 'Oct 2024', completed: 18, briefsGenerated: 14, uniqueClients: 10 },
+    { month: 'Nov 2024', completed: 20, briefsGenerated: 17, uniqueClients: 12 },
+    { month: 'Dec 2024', completed: 16, briefsGenerated: 14, uniqueClients: 9 },
+    { month: 'Jan 2025', completed: 21, briefsGenerated: 19, uniqueClients: 13 },
+    { month: 'Feb 2025', completed: 19, briefsGenerated: 18, uniqueClients: 11 },
+    { month: 'Mar 2025', completed: 22, briefsGenerated: 21, uniqueClients: 14 },
   ],
 
   atlasAdoptionRate: 0.94,

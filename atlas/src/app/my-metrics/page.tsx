@@ -76,12 +76,22 @@ function PolicyBar({ label, breakdown, color }: {
 export default function MyMetricsPage() {
   const m = marcusMetrics;
   const [prepExpanded, setPrepExpanded] = useState(false);
+  const [volumeView, setVolumeView] = useState<'weekly' | 'monthly'>('monthly');
 
   const weeklyData = m.weeklyTrend.map(w => ({
     name: w.week,
     'Sessions Completed': w.completed,
     'Briefs Generated': w.briefsGenerated,
   }));
+
+  const monthlyData = m.monthlyTrend.map(mo => ({
+    name: mo.month.replace(' 20', ' \''),   // "Oct '24"
+    'Sessions Completed': mo.completed,
+    'Briefs Generated': mo.briefsGenerated,
+    'Unique Clients': mo.uniqueClients,
+  }));
+
+  const chartData = volumeView === 'monthly' ? monthlyData : weeklyData;
 
   const prepBarData = m.prepTimeRecords.slice(0, 10).map(r => ({
     name: r.clientName.split(' ').slice(0, 2).join(' '),
@@ -165,21 +175,40 @@ export default function MyMetricsPage() {
             />
           </div>
 
-          {/* Weekly trend chart */}
+          {/* Volume trend chart */}
           <div className="card p-5 mt-4">
-            <div className="text-sm font-semibold text-[var(--text-primary)] mb-4">Sessions per Week</div>
-            <div style={{ height: 180 }}>
+            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+              <div className="text-sm font-semibold text-[var(--text-primary)]">
+                Sessions {volumeView === 'monthly' ? 'per Month' : 'per Week'}
+              </div>
+              <div className="flex items-center rounded-lg border border-[var(--border-color)] overflow-hidden text-xs font-medium">
+                <button
+                  onClick={() => setVolumeView('monthly')}
+                  className={`px-3 py-1.5 transition-colors ${volumeView === 'monthly' ? 'bg-[var(--intuit-blue)] text-white' : 'bg-white text-[var(--text-secondary)] hover:bg-slate-50'}`}
+                >
+                  Monthly
+                </button>
+                <button
+                  onClick={() => setVolumeView('weekly')}
+                  className={`px-3 py-1.5 transition-colors ${volumeView === 'weekly' ? 'bg-[var(--intuit-blue)] text-white' : 'bg-white text-[var(--text-secondary)] hover:bg-slate-50'}`}
+                >
+                  Weekly
+                </button>
+              </div>
+            </div>
+            <div style={{ height: 200 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={weeklyData} barSize={24} barGap={4}>
+                <BarChart data={chartData} barSize={volumeView === 'monthly' ? 20 : 24} barGap={4}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={28} />
-                  <Tooltip
-                    contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 12 }}
-                  />
+                  <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 12 }} />
                   <Legend wrapperStyle={{ fontSize: 11 }} />
                   <Bar dataKey="Sessions Completed" fill="#0077C5" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="Briefs Generated" fill="#FF6900" radius={[4, 4, 0, 0]} />
+                  {volumeView === 'monthly' && (
+                    <Bar dataKey="Unique Clients" fill="#94A3B8" radius={[4, 4, 0, 0]} />
+                  )}
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -359,27 +388,27 @@ export default function MyMetricsPage() {
           {/* Headline stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
             <div className="card p-5 text-center border-[var(--intuit-blue)] border-2 bg-[var(--intuit-blue-light)]">
-              <div className="text-3xl font-bold text-[var(--intuit-blue)]">{m.avgPrepTimeMinutes}m</div>
+              <div className="text-3xl font-bold text-[var(--intuit-blue)]">{m.avgPrepTimeMinutes} <span className="text-xl">min</span></div>
               <div className="text-sm font-medium text-[var(--text-secondary)] mt-1">Average Prep Time</div>
-              <div className="text-xs text-[var(--text-muted)] mt-0.5">vs 40–60m manual (pre-Atlas)</div>
+              <div className="text-xs text-[var(--text-muted)] mt-0.5">vs 40–60 min manual (pre-Atlas)</div>
             </div>
             <div className="card p-5 text-center">
               <div className="text-3xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-1">
-                <ArrowDown size={18} className="text-green-500" />{m.minPrepTimeMinutes}m
+                <ArrowDown size={18} className="text-green-500" />{m.minPrepTimeMinutes} <span className="text-xl font-normal">min</span>
               </div>
               <div className="text-sm font-medium text-[var(--text-secondary)] mt-1">Fastest Prep</div>
               <div className="text-xs text-[var(--text-muted)] mt-0.5">Blue Ridge Bakery · Mar 13</div>
             </div>
             <div className="card p-5 text-center">
               <div className="text-3xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-1">
-                <ArrowUp size={18} className="text-amber-500" />{m.maxPrepTimeMinutes}m
+                <ArrowUp size={18} className="text-amber-500" />{m.maxPrepTimeMinutes} <span className="text-xl font-normal">min</span>
               </div>
               <div className="text-sm font-medium text-[var(--text-secondary)] mt-1">Longest Prep</div>
               <div className="text-xs text-[var(--text-muted)] mt-0.5">Coastal Realty · Feb 28</div>
             </div>
             <div className="card p-5 text-center">
               <div className="text-3xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-1">
-                <Minus size={18} className="text-slate-400" />{m.medianPrepTimeMinutes}m
+                <Minus size={18} className="text-slate-400" />{m.medianPrepTimeMinutes} <span className="text-xl font-normal">min</span>
               </div>
               <div className="text-sm font-medium text-[var(--text-secondary)] mt-1">Median</div>
               <div className="text-xs text-[var(--text-muted)] mt-0.5">50th percentile</div>
@@ -395,7 +424,7 @@ export default function MyMetricsPage() {
                   Atlas saved Marcus ~{Math.round((40 - m.avgPrepTimeMinutes) * m.sessionsCompleted / 60)} hours this month
                 </div>
                 <div className="text-xs text-green-600 mt-0.5">
-                  Average prep dropped from 40–60 min (manual) to {m.avgPrepTimeMinutes} min (Atlas AI pipeline) — across {m.sessionsCompleted} sessions
+                  Average prep dropped from 40–60 minutes (manual) to {m.avgPrepTimeMinutes} minutes (Atlas AI pipeline) — across {m.sessionsCompleted} sessions
                 </div>
               </div>
             </div>
@@ -409,16 +438,16 @@ export default function MyMetricsPage() {
                 <BarChart data={prepBarData} barSize={20}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
                   <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={28} unit="m" />
+                  <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={36} unit=" min" />
                   <Tooltip
                     contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 12 }}
-                    formatter={(v) => [`${Number(v)}m`, 'Prep Time']}
+                    formatter={(v) => [`${Number(v)} min`, 'Prep Time']}
                   />
                   <Bar
                     dataKey="Prep (min)"
                     fill="#0077C5"
                     radius={[4, 4, 0, 0]}
-                    label={{ position: 'top', fontSize: 10, fill: '#94A3B8', formatter: (v: unknown) => `${v}m` }}
+                    label={{ position: 'top', fontSize: 10, fill: '#94A3B8', formatter: (v: unknown) => `${v} min` }}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -440,8 +469,8 @@ export default function MyMetricsPage() {
                   <tr className="bg-slate-50 border-b border-[var(--border-color)]">
                     <th className="text-left px-5 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Date</th>
                     <th className="text-left px-4 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Client</th>
-                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Prep</th>
-                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">Session</th>
+                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Prep (min)</th>
+                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">Session (min)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-color)]">
@@ -454,13 +483,13 @@ export default function MyMetricsPage() {
                         <td className="px-4 py-2.5 text-[var(--text-primary)] font-medium text-sm">{r.clientName}</td>
                         <td className="px-4 py-2.5 text-center">
                           <span className={`text-sm font-semibold ${isMax ? 'text-amber-600' : isMin ? 'text-green-600' : 'text-[var(--text-primary)]'}`}>
-                            {r.prepTimeMinutes}m
+                            {r.prepTimeMinutes} min
                           </span>
                           {isMax && <span className="ml-1 text-xs text-amber-500">↑ max</span>}
                           {isMin && <span className="ml-1 text-xs text-green-500">↓ min</span>}
                         </td>
                         <td className="px-4 py-2.5 text-center hidden sm:table-cell text-xs text-[var(--text-muted)]">
-                          {r.sessionDurationMinutes > 0 ? `${r.sessionDurationMinutes}m` : '—'}
+                          {r.sessionDurationMinutes > 0 ? `${r.sessionDurationMinutes} min` : '—'}
                         </td>
                       </tr>
                     );

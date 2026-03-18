@@ -4,12 +4,49 @@ import { useState } from 'react';
 import Header from '@/components/layout/Header';
 import {
   Star, Users, Calendar, TrendingUp, ShieldCheck, Clock,
-  CheckCircle2, XCircle, ChevronDown, ChevronUp, BarChart3,
-  AlertTriangle, Zap, ArrowUp, ArrowDown, Minus,
+  CheckCircle2, XCircle, ChevronDown, ChevronUp,
+  AlertTriangle, Zap, ArrowUp, ArrowDown, Minus, Bot,
+  Sparkles, Building2,
 } from 'lucide-react';
 import { marcusMetrics } from '@/data/mock/marcus-metrics';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
+// ── Derived constants ─────────────────────────────────────────────────────────
+const m = marcusMetrics;
+
+// Prep-time savings vs manual baseline of 40 min
+const prepSavingsHours = +((40 - m.avgPrepTimeMinutes) * m.sessionsCompleted / 60).toFixed(1);
+
+// LOW-risk automated approval savings:
+// Each LOW action was auto-approved without Marcus's manual review.
+// Assume 3 min of manual review time saved per automated LOW action.
+const lowAutoApprovals = m.policyByRisk.LOW.approved;     // 11
+const lowAutoSavingsMins = lowAutoApprovals * 3;           // 33 min
+const lowAutoSavingsHours = +(lowAutoSavingsMins / 60).toFixed(1); // 0.6
+
+const totalAiSavingsHours = +(prepSavingsHours + lowAutoSavingsHours).toFixed(1);
+
+// Entity type CSAT roll-up
+const entityCsat: Record<string, { totalCsat: number; count: number }> = {};
+m.topClients.forEach(c => {
+  if (!entityCsat[c.entityType]) entityCsat[c.entityType] = { totalCsat: 0, count: 0 };
+  entityCsat[c.entityType].totalCsat += c.avgCsat * c.sessionsCount;
+  entityCsat[c.entityType].count += c.sessionsCount;
+});
+const entityPerf = Object.entries(entityCsat)
+  .map(([type, { totalCsat, count }]) => ({ type, avgCsat: +(totalCsat / count).toFixed(2), sessions: count }))
+  .sort((a, b) => b.avgCsat - a.avgCsat);
+
+// High-risk session pattern: sessions that had HIGH actions
+const highRiskSessions = m.prepTimeRecords.filter(r =>
+  ['Meridian Home Goods', 'Coastal Realty Partners', 'TechStart Consulting'].includes(r.clientName)
+);
+const highRiskAvgPrep = +(highRiskSessions.reduce((s, r) => s + r.prepTimeMinutes, 0) / highRiskSessions.length).toFixed(1);
+const lowRiskSessions = m.prepTimeRecords.filter(r =>
+  ['Blue Ridge Bakery', 'Apex Landscaping LLC', 'Harbor Light Brewing'].includes(r.clientName)
+);
+const lowRiskAvgPrep = +(lowRiskSessions.reduce((s, r) => s + r.prepTimeMinutes, 0) / lowRiskSessions.length).toFixed(1);
+
+// ── Sub-components ────────────────────────────────────────────────────────────
 function StatCard({
   label, value, sub, icon, accent = false, flag = false,
 }: {
@@ -73,31 +110,24 @@ function PolicyBar({ label, breakdown, color }: {
   );
 }
 
+// ── Inline highlight for the AI summary ──────────────────────────────────────
+function Hi({ children, color = 'blue' }: { children: React.ReactNode; color?: 'blue' | 'green' | 'orange' | 'red' }) {
+  const cls = {
+    blue: 'bg-[var(--intuit-blue-light)] text-[var(--intuit-blue)]',
+    green: 'bg-green-100 text-green-800',
+    orange: 'bg-orange-100 text-orange-800',
+    red: 'bg-red-100 text-red-700',
+  }[color];
+  return (
+    <span className={`inline-flex items-center font-semibold px-1.5 py-0.5 rounded mx-0.5 text-[0.85em] ${cls}`}>
+      {children}
+    </span>
+  );
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 export default function MyMetricsPage() {
-  const m = marcusMetrics;
   const [prepExpanded, setPrepExpanded] = useState(false);
-  const [volumeView, setVolumeView] = useState<'weekly' | 'monthly'>('monthly');
-
-  const weeklyData = m.weeklyTrend.map(w => ({
-    name: w.week,
-    'Sessions Completed': w.completed,
-    'Briefs Generated': w.briefsGenerated,
-  }));
-
-  const monthlyData = m.monthlyTrend.map(mo => ({
-    name: mo.month.replace(' 20', ' \''),   // "Oct '24"
-    'Sessions Completed': mo.completed,
-    'Briefs Generated': mo.briefsGenerated,
-    'Unique Clients': mo.uniqueClients,
-  }));
-
-  const chartData = volumeView === 'monthly' ? monthlyData : weeklyData;
-
-  const prepBarData = m.prepTimeRecords.slice(0, 10).map(r => ({
-    name: r.clientName.split(' ').slice(0, 2).join(' '),
-    'Prep (min)': r.prepTimeMinutes,
-    date: r.date,
-  }));
 
   return (
     <div className="flex-1 flex flex-col" style={{ background: 'var(--bg-page)' }}>
@@ -108,7 +138,113 @@ export default function MyMetricsPage() {
 
       <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-5xl w-full space-y-8">
 
-        {/* Expert identity strip */}
+        {/* ── AI-Generated Summary ── */}
+        <div className="card overflow-hidden">
+          <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-[var(--intuit-blue-light)] to-white border-b border-[var(--border-color)]">
+            <div className="w-8 h-8 rounded-lg bg-[var(--intuit-blue)] flex items-center justify-center shrink-0">
+              <Bot size={15} className="text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-semibold text-[var(--text-primary)]">AI-Generated Performance Summary</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200 font-medium">Atlas AI</span>
+              </div>
+              <div className="text-xs text-[var(--text-muted)]">Feb 17 – Mar 18, 2025 · Auto-generated from session and governance data</div>
+            </div>
+            <Sparkles size={16} className="ml-auto text-[var(--intuit-orange)] shrink-0" />
+          </div>
+
+          <div className="p-5 space-y-5">
+
+            {/* Client Coverage */}
+            <div>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Client Coverage</div>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                Marcus completed <Hi color="blue">{m.sessionsCompleted} sessions</Hi> across
+                <Hi color="blue">{m.uniqueClientsServed} unique clients</Hi> this month —
+                <Hi color="green">{m.newClientsOnboarded} newly onboarded</Hi> and
+                <Hi color="blue">{m.repeatClients} returning</Hi>.
+                His completion rate of <Hi color="green">{Math.round(m.completionRate * 100)}%</Hi> is
+                above the platform average of 88%. S-Corp entities dominate his book of work
+                ({m.topClients.filter(c => c.entityType === 'S-Corp').length} of {m.topClients.length} tracked clients),
+                followed by LLCs and one sole proprietor.
+              </p>
+            </div>
+
+            {/* Hours saved */}
+            <div>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">AI Time Savings</div>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                Atlas AI reclaimed an estimated <Hi color="green">~{totalAiSavingsHours} hours</Hi> for Marcus this month.
+                <Hi color="green">{prepSavingsHours} hours</Hi> came from automated session prep
+                (avg {m.avgPrepTimeMinutes} min per session vs 40-min manual baseline across {m.sessionsCompleted} sessions).
+                An additional <Hi color="green">{lowAutoSavingsMins} minutes</Hi> were saved through automated
+                approval of <Hi color="blue">{lowAutoApprovals} LOW-risk policy actions</Hi> that required no manual
+                review — Atlas classified and closed these autonomously with 100% acceptance.
+              </p>
+            </div>
+
+            {/* CSAT */}
+            <div>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">CSAT & Quality</div>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                Marcus is tracking at <Hi color="green">{m.csatTrailing30} / 5.0 CSAT</Hi> for the trailing 30 days.
+                Top-rated sessions were with <Hi color="blue">Apex Landscaping</Hi> and <Hi color="blue">Harbor Light Brewing</Hi> (both 5.0).
+                AI confidence averaged <Hi color="blue">{Math.round(m.avgConfidenceScore * 100)}%</Hi> across all agent outputs,
+                and <Hi color="blue">94%</Hi> of sessions used an Atlas-generated pre-session brief.
+              </p>
+            </div>
+
+            {/* Entity type AI performance */}
+            <div>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">AI Accuracy by Entity Type</div>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed mb-3">
+                AI-recommended actions are performing strongest for <Hi color="green">S-Corp clients</Hi>,
+                where the policy approval rate is highest and CSAT averages{' '}
+                <Hi color="green">{entityPerf.find(e => e.type === 'S-Corp')?.avgCsat ?? '—'}</Hi>.
+                S-Corps generate well-structured, pattern-matchable scenarios (reasonable compensation, Section 179,
+                payroll compliance) that Atlas handles with high confidence.
+                <Hi color="blue">LLC clients</Hi> show slightly more variance —
+                Coastal Realty Partners required the longest prep time ({m.maxPrepTimeMinutes} min)
+                due to mixed-use real estate complexity that fell outside standard policy templates.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {entityPerf.map(e => (
+                  <div key={e.type} className="p-3 rounded-lg bg-slate-50 border border-[var(--border-color)] text-center">
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                      <Building2 size={11} className="text-[var(--text-muted)]" />
+                      <span className="text-xs font-semibold text-[var(--text-primary)]">{e.type}</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1">
+                      <Star size={11} className="text-amber-400 fill-amber-400" />
+                      <span className="text-sm font-bold text-[var(--text-primary)]">{e.avgCsat}</span>
+                    </div>
+                    <div className="text-[10px] text-[var(--text-muted)] mt-0.5">{e.sessions} sessions</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* High risk / cognitive judgment pattern */}
+            <div>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">High-Risk & Cognitive Judgment Pattern</div>
+              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+                Sessions involving <Hi color="red">HIGH-risk policy findings</Hi> (9 this month) consistently required
+                more expert judgment and longer prep time. Clients like <Hi color="orange">Meridian Home Goods</Hi> and{' '}
+                <Hi color="orange">Coastal Realty Partners</Hi> averaged <Hi color="orange">{highRiskAvgPrep} min</Hi> of prep
+                vs <Hi color="green">{lowRiskAvgPrep} min</Hi> for lower-risk clients — a{' '}
+                {Math.round(((highRiskAvgPrep - lowRiskAvgPrep) / lowRiskAvgPrep) * 100)}% increase reflecting the
+                additional reasoning required around contractor misclassification, complex deduction eligibility,
+                and S-Corp compensation reviews. These <Hi color="red">3 overridden</Hi> HIGH-risk recommendations
+                represent cases where Marcus&apos;s expert judgment diverged from the AI — a signal for model
+                refinement in real estate and multi-entity scenarios.
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        {/* ── Expert identity strip ── */}
         <div className="card p-5 flex items-center gap-4 flex-wrap justify-between">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-[var(--intuit-blue)] text-white flex items-center justify-center text-xl font-bold shrink-0">
@@ -141,11 +277,11 @@ export default function MyMetricsPage() {
           </div>
         </div>
 
-        {/* ── Section 1: Session Volume ── */}
+        {/* ── Section 1: Session Volume — Monthly ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
             <Calendar size={16} className="text-[var(--intuit-blue)]" />
-            Session Volume
+            Session Volume — Monthly
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <StatCard
@@ -175,42 +311,51 @@ export default function MyMetricsPage() {
             />
           </div>
 
-          {/* Volume trend chart */}
-          <div className="card p-5 mt-4">
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-              <div className="text-sm font-semibold text-[var(--text-primary)]">
-                Sessions {volumeView === 'monthly' ? 'per Month' : 'per Week'}
-              </div>
-              <div className="flex items-center rounded-lg border border-[var(--border-color)] overflow-hidden text-xs font-medium">
-                <button
-                  onClick={() => setVolumeView('monthly')}
-                  className={`px-3 py-1.5 transition-colors ${volumeView === 'monthly' ? 'bg-[var(--intuit-blue)] text-white' : 'bg-white text-[var(--text-secondary)] hover:bg-slate-50'}`}
-                >
-                  Monthly
-                </button>
-                <button
-                  onClick={() => setVolumeView('weekly')}
-                  className={`px-3 py-1.5 transition-colors ${volumeView === 'weekly' ? 'bg-[var(--intuit-blue)] text-white' : 'bg-white text-[var(--text-secondary)] hover:bg-slate-50'}`}
-                >
-                  Weekly
-                </button>
-              </div>
+          {/* Monthly trend table (no chart) */}
+          <div className="card overflow-hidden mt-4">
+            <div className="px-5 py-3 border-b border-[var(--border-color)] bg-slate-50 flex items-center justify-between">
+              <span className="text-sm font-semibold text-[var(--text-primary)]">6-Month Trend</span>
+              <span className="text-xs text-[var(--text-muted)]">Sessions · Briefs · Unique Clients</span>
             </div>
-            <div style={{ height: 200 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} barSize={volumeView === 'monthly' ? 20 : 24} barGap={4}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={28} />
-                  <Tooltip contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 12 }} />
-                  <Legend wrapperStyle={{ fontSize: 11 }} />
-                  <Bar dataKey="Sessions Completed" fill="#0077C5" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Briefs Generated" fill="#FF6900" radius={[4, 4, 0, 0]} />
-                  {volumeView === 'monthly' && (
-                    <Bar dataKey="Unique Clients" fill="#94A3B8" radius={[4, 4, 0, 0]} />
-                  )}
-                </BarChart>
-              </ResponsiveContainer>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border-color)]">
+                    <th className="text-left px-5 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Month</th>
+                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Sessions</th>
+                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Briefs</th>
+                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Unique Clients</th>
+                    <th className="text-center px-4 py-2.5 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">Atlas %</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border-color)]">
+                  {m.monthlyTrend.map((mo, i) => {
+                    const isLatest = i === m.monthlyTrend.length - 1;
+                    const atlasRate = Math.round((mo.briefsGenerated / mo.completed) * 100);
+                    return (
+                      <tr key={mo.month} className={`transition-colors ${isLatest ? 'bg-[var(--intuit-blue-light)]' : 'hover:bg-slate-50'}`}>
+                        <td className="px-5 py-3 font-medium text-[var(--text-primary)]">
+                          {mo.month}
+                          {isLatest && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--intuit-blue)] text-white font-semibold">Current</span>}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <div className="h-1.5 rounded-full bg-[var(--intuit-blue)] opacity-70" style={{ width: `${(mo.completed / 22) * 36}px` }} />
+                            <span className="font-semibold text-[var(--text-primary)]">{mo.completed}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center text-[var(--text-secondary)]">{mo.briefsGenerated}</td>
+                        <td className="px-4 py-3 text-center text-[var(--text-secondary)]">{mo.uniqueClients}</td>
+                        <td className="px-4 py-3 text-center hidden sm:table-cell">
+                          <span className={`text-xs font-medium ${atlasRate >= 90 ? 'text-green-600' : atlasRate >= 75 ? 'text-amber-600' : 'text-slate-500'}`}>
+                            {atlasRate}%
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -269,7 +414,6 @@ export default function MyMetricsPage() {
             Policy-Based Actions — {m.totalPolicyActions} total
           </h2>
 
-          {/* Summary cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
             <div className="card p-4 text-center">
               <div className="text-3xl font-bold text-[var(--text-primary)]">{m.totalPolicyActions}</div>
@@ -297,26 +441,11 @@ export default function MyMetricsPage() {
             </div>
           </div>
 
-          {/* By risk level */}
           <div className="card p-5 space-y-4">
             <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">Breakdown by Risk Level</div>
-
-            <PolicyBar
-              label="HIGH"
-              breakdown={m.policyByRisk.HIGH}
-              color="bg-red-100 text-red-700 border-red-200"
-            />
-            <PolicyBar
-              label="MEDIUM"
-              breakdown={m.policyByRisk.MEDIUM}
-              color="bg-amber-100 text-amber-700 border-amber-200"
-            />
-            <PolicyBar
-              label="LOW"
-              breakdown={m.policyByRisk.LOW}
-              color="bg-green-100 text-green-700 border-green-200"
-            />
-
+            <PolicyBar label="HIGH" breakdown={m.policyByRisk.HIGH} color="bg-red-100 text-red-700 border-red-200" />
+            <PolicyBar label="MEDIUM" breakdown={m.policyByRisk.MEDIUM} color="bg-amber-100 text-amber-700 border-amber-200" />
+            <PolicyBar label="LOW" breakdown={m.policyByRisk.LOW} color="bg-green-100 text-green-700 border-green-200" />
             <div className="flex items-center gap-4 pt-2 text-xs text-[var(--text-muted)] border-t border-[var(--border-color)]">
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-green-500 inline-block" />Approved</span>
               <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-red-400 inline-block" />Overridden</span>
@@ -324,7 +453,6 @@ export default function MyMetricsPage() {
             </div>
           </div>
 
-          {/* Detail table */}
           <div className="card overflow-hidden mt-4">
             <table className="w-full text-sm">
               <thead>
@@ -415,42 +543,49 @@ export default function MyMetricsPage() {
             </div>
           </div>
 
-          {/* Time savings callout */}
-          <div className="card p-4 mb-5 bg-green-50 border-green-200 border">
-            <div className="flex items-center gap-3">
-              <div className="text-2xl shrink-0">⚡</div>
+          {/* Combined time savings breakdown */}
+          <div className="card p-5 mb-5 bg-green-50 border-green-200 border space-y-4">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="text-xl">⚡</div>
+              <span className="font-semibold text-green-800 text-sm">
+                Total AI time savings this month: ~{totalAiSavingsHours} hours
+              </span>
+            </div>
+
+            {/* Row 1: Prep time savings */}
+            <div className="flex items-start gap-3 pl-1">
+              <div className="w-2 h-2 rounded-full bg-green-500 mt-1.5 shrink-0" />
               <div>
-                <div className="font-semibold text-green-800 text-sm">
-                  Atlas saved Marcus ~{Math.round((40 - m.avgPrepTimeMinutes) * m.sessionsCompleted / 60)} hours this month
+                <div className="text-sm font-medium text-green-800">
+                  Session prep automation — <span className="font-bold">{prepSavingsHours} hours saved</span>
                 </div>
-                <div className="text-xs text-green-600 mt-0.5">
-                  Average prep dropped from 40–60 minutes (manual) to {m.avgPrepTimeMinutes} minutes (Atlas AI pipeline) — across {m.sessionsCompleted} sessions
+                <div className="text-xs text-green-700 mt-0.5">
+                  Avg prep dropped from 40 min (manual) to {m.avgPrepTimeMinutes} min (Atlas AI pipeline) across {m.sessionsCompleted} sessions.
+                  That&apos;s {Math.round(40 - m.avgPrepTimeMinutes)} minutes recovered per session.
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Prep time bar chart */}
-          <div className="card p-5 mb-4">
-            <div className="text-sm font-semibold text-[var(--text-primary)] mb-4">Prep Time — Last 10 Sessions (minutes)</div>
-            <div style={{ height: 200 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={prepBarData} barSize={20}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                  <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: '#94A3B8' }} axisLine={false} tickLine={false} width={36} unit=" min" />
-                  <Tooltip
-                    contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 12 }}
-                    formatter={(v) => [`${Number(v)} min`, 'Prep Time']}
-                  />
-                  <Bar
-                    dataKey="Prep (min)"
-                    fill="#0077C5"
-                    radius={[4, 4, 0, 0]}
-                    label={{ position: 'top', fontSize: 10, fill: '#94A3B8', formatter: (v: unknown) => `${v} min` }}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+            {/* Row 2: Automated LOW approvals */}
+            <div className="flex items-start gap-3 pl-1">
+              <div className="w-2 h-2 rounded-full bg-green-400 mt-1.5 shrink-0" />
+              <div>
+                <div className="text-sm font-medium text-green-800">
+                  Automated LOW-risk approvals — <span className="font-bold">{lowAutoSavingsMins} minutes saved</span>
+                </div>
+                <div className="text-xs text-green-700 mt-0.5">
+                  {lowAutoApprovals} LOW-risk policy actions were classified and autonomously approved by Atlas
+                  with no manual review required — saving ~3 min each.
+                  These included routine deduction confirmations, standard depreciation elections, and
+                  expense categorisation with high-confidence matches.
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200 font-medium">
+                    {lowAutoApprovals} actions auto-approved
+                  </span>
+                  <span className="text-xs text-green-600">100% acceptance · 0 overrides</span>
+                </div>
+              </div>
             </div>
           </div>
 

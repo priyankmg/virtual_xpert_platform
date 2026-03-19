@@ -2,27 +2,117 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
 import {
   X, LayoutDashboard, Database, FileText, ShieldCheck,
   Search, Calculator, ClipboardList, Bot, Zap, Star, BarChart2,
+  Activity,
 } from 'lucide-react';
 
+// ── Smart tooltip configuration ────────────────────────────────────────────────
+// lastVisited: ISO date string. If null → feature is "new" (never visited).
+// Shows a tooltip indicator when: isNew OR lastVisited was >30 days ago.
+interface NavTooltipMeta {
+  tip: string;
+  isNew?: boolean;
+  lastVisitedKey: string; // localStorage key for this route's last visit
+}
+
+const NAV_TOOLTIPS: Record<string, NavTooltipMeta> = {
+  '/precedents': {
+    tip: 'You haven\'t used IRS Precedents in a while. Tap to search case history for your active clients.',
+    lastVisitedKey: 'atlas_visited_precedents',
+  },
+  '/governance': {
+    tip: 'Governance Log tracks every AI action taken — including auto-approved LOW-risk items.',
+    lastVisitedKey: 'atlas_visited_governance',
+  },
+  '/admin-metrics': {
+    tip: 'New: Admin Engagement Dashboard — user adoption funnel, feature usage & AI model trends for product teams.',
+    isNew: true,
+    lastVisitedKey: 'atlas_visited_admin_metrics',
+  },
+  '/agents': {
+    tip: 'New: Self-Healing API Agent now monitors all source systems in real time.',
+    isNew: true,
+    lastVisitedKey: 'atlas_visited_agents',
+  },
+  '/my-metrics': {
+    tip: 'New: AI-generated performance summary now appears at the top of your metrics.',
+    isNew: true,
+    lastVisitedKey: 'atlas_visited_my_metrics',
+  },
+};
+
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
+function shouldShowTip(meta: NavTooltipMeta): boolean {
+  if (meta.isNew) return true;
+  try {
+    const raw = localStorage.getItem(meta.lastVisitedKey);
+    if (!raw) return true; // never visited
+    return Date.now() - new Date(raw).getTime() > THIRTY_DAYS_MS;
+  } catch {
+    return false;
+  }
+}
+
+// ── Nav items ──────────────────────────────────────────────────────────────────
 const navItems = [
-  { href: '/', label: 'Work Queue', icon: LayoutDashboard, section: 'expert' },
-  { href: '/financial-snapshot', label: 'Financial Snapshot', icon: Database, section: 'client' },
-  { href: '/session-brief', label: 'Session Brief', icon: FileText, section: 'client' },
-  { href: '/policy-review', label: 'Policy Review', icon: ShieldCheck, section: 'client' },
-  { href: '/precedents', label: 'IRS Precedents', icon: Search, section: 'client' },
-  { href: '/tax-estimate', label: 'Tax Estimate', icon: Calculator, section: 'client' },
-  { href: '/governance', label: 'Governance Log', icon: ClipboardList, section: 'platform' },
-  { href: '/agents', label: 'Agent Panel', icon: Bot, section: 'platform' },
-  { href: '/my-metrics', label: 'My Metrics', icon: BarChart2, section: 'platform' },
+  { href: '/',                    label: 'Work Queue',       icon: LayoutDashboard, section: 'expert'   },
+  { href: '/financial-snapshot',  label: 'Financial Snapshot', icon: Database,       section: 'client'   },
+  { href: '/session-brief',       label: 'Session Brief',    icon: FileText,        section: 'client'   },
+  { href: '/policy-review',       label: 'Policy Review',    icon: ShieldCheck,     section: 'client'   },
+  { href: '/precedents',          label: 'IRS Precedents',   icon: Search,          section: 'client'   },
+  { href: '/tax-estimate',        label: 'Tax Estimate',     icon: Calculator,      section: 'client'   },
+  { href: '/governance',          label: 'Governance Log',   icon: ClipboardList,   section: 'platform' },
+  { href: '/agents',              label: 'Agent Panel',      icon: Bot,             section: 'platform' },
+  { href: '/my-metrics',          label: 'My Metrics',       icon: BarChart2,       section: 'platform' },
+  { href: '/admin-metrics',       label: 'Admin Metrics',    icon: Activity,        section: 'platform', adminOnly: true },
 ];
 
-const expertSectionItems = navItems.filter(i => i.section === 'expert');
-const clientSectionItems = navItems.filter(i => i.section === 'client');
+const expertSectionItems  = navItems.filter(i => i.section === 'expert');
+const clientSectionItems  = navItems.filter(i => i.section === 'client');
 const platformSectionItems = navItems.filter(i => i.section === 'platform');
 
+// ── SmartTip dot component ─────────────────────────────────────────────────────
+function SmartTipDot({ meta, onDismiss }: { meta: NavTooltipMeta; onDismiss: () => void }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <span className="relative ml-auto shrink-0" style={{ zIndex: 10 }}>
+      <span
+        className={`relative inline-flex w-2 h-2 cursor-pointer`}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDismiss(); }}
+      >
+        <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-60 ${meta.isNew ? 'bg-orange-400' : 'bg-blue-400'}`} />
+        <span className={`relative inline-flex rounded-full w-2 h-2 ${meta.isNew ? 'bg-orange-500' : 'bg-blue-400'}`} />
+      </span>
+
+      {hovered && (
+        <div
+          className="absolute left-6 top-1/2 -translate-y-1/2 z-50 w-56 p-3 rounded-xl shadow-xl text-xs text-white leading-relaxed pointer-events-none"
+          style={{ background: '#1E293B', border: '1px solid #334155' }}
+        >
+          {meta.isNew && (
+            <div className="text-[10px] font-bold text-orange-400 uppercase tracking-wider mb-1">✦ New</div>
+          )}
+          {meta.tip}
+          <div className="text-slate-400 mt-1.5 text-[10px]">Click dot to dismiss</div>
+          {/* Arrow */}
+          <span
+            className="absolute right-full top-1/2 -translate-y-1/2 border-4 border-transparent"
+            style={{ borderRightColor: '#1E293B' }}
+          />
+        </div>
+      )}
+    </span>
+  );
+}
+
+// ── Sidebar ────────────────────────────────────────────────────────────────────
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
@@ -30,19 +120,68 @@ interface SidebarProps {
 
 export default function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
+  // Track which tips are active (computed once on mount, then updated on dismiss)
+  const [activeTips, setActiveTips] = useState<Record<string, boolean>>({});
 
-  function NavLink({ href, label, icon: Icon }: { href: string; label: string; icon: typeof LayoutDashboard }) {
-    const isActive = pathname === href || pathname.startsWith(href + '/') && href !== '/';
+  useEffect(() => {
+    const initial: Record<string, boolean> = {};
+    Object.entries(NAV_TOOLTIPS).forEach(([route, meta]) => {
+      initial[route] = shouldShowTip(meta);
+    });
+    setActiveTips(initial);
+  }, []);
+
+  const dismissTip = useCallback((route: string) => {
+    const meta = NAV_TOOLTIPS[route];
+    if (!meta) return;
+    try { localStorage.setItem(meta.lastVisitedKey, new Date().toISOString()); } catch { /* noop */ }
+    setActiveTips(prev => ({ ...prev, [route]: false }));
+  }, []);
+
+  // Record visit whenever the route changes
+  useEffect(() => {
+    const meta = NAV_TOOLTIPS[pathname];
+    if (!meta) return;
+    try { localStorage.setItem(meta.lastVisitedKey, new Date().toISOString()); } catch { /* noop */ }
+    setActiveTips(prev => ({ ...prev, [pathname]: false }));
+  }, [pathname]);
+
+  function NavLink({
+    href,
+    label,
+    icon: Icon,
+    adminOnly = false,
+  }: {
+    href: string;
+    label: string;
+    icon: typeof LayoutDashboard;
+    adminOnly?: boolean;
+  }) {
     const isExactActive = pathname === href;
-    const active = href === '/' ? isExactActive : isActive;
+    const isActive = href === '/' ? isExactActive : pathname === href || pathname.startsWith(href + '/');
+    const meta = NAV_TOOLTIPS[href];
+    const showTip = !!meta && !!activeTips[href];
+
     return (
       <Link
         href={href}
         onClick={onClose}
-        className={`sidebar-nav-item ${active ? 'active' : ''}`}
+        className={`sidebar-nav-item ${isActive ? 'active' : ''} ${adminOnly ? 'opacity-80' : ''}`}
+        style={adminOnly && !isActive ? { borderStyle: 'dashed', borderColor: '#E2E8F0', borderWidth: '1px' } : {}}
       >
         <Icon size={16} className="flex-shrink-0" />
-        <span className="truncate">{label}</span>
+        <span className="truncate flex-1">{label}</span>
+        {adminOnly && !isActive && (
+          <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 font-semibold uppercase tracking-wide shrink-0">
+            Admin
+          </span>
+        )}
+        {showTip && !adminOnly && (
+          <SmartTipDot meta={meta} onDismiss={() => dismissTip(href)} />
+        )}
+        {showTip && adminOnly && (
+          <SmartTipDot meta={meta} onDismiss={() => dismissTip(href)} />
+        )}
       </Link>
     );
   }
@@ -135,7 +274,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         {/* Footer */}
         <div className="px-5 py-4 border-t border-slate-100">
           <div className="text-xs font-medium" style={{ color: '#94A3B8' }}>Intuit Virtual Expert Platform</div>
-          <div className="text-xs mt-0.5" style={{ color: '#CBD5E1' }}>Prototype v2.0 · 2025</div>
+          <div className="text-xs mt-0.5" style={{ color: '#CBD5E1' }}>Prototype v2.1 · 2025</div>
         </div>
       </aside>
     </>

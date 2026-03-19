@@ -2,6 +2,7 @@
 
 import { useState, createContext, useContext } from 'react';
 import Sidebar from './Sidebar';
+import WhatsNewModal from '@/components/ui/WhatsNewModal';
 
 // ── Sidebar context ────────────────────────────────────────────────────────────
 const SidebarContext = createContext<{ open: () => void }>({ open: () => {} });
@@ -49,6 +50,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarContext.Provider value={{ open: () => setSidebarOpen(true) }}>
       <ClientContext.Provider value={{ selectedClient, setSelectedClient }}>
+        <WhatsNewModal />
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="lg:ml-64 min-h-screen flex flex-col">
           {children}

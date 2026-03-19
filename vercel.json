@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd atlas && npm install && npm run build",
+  "outputDirectory": "atlas/.next",
+  "installCommand": "echo 'root install skipped — app lives in atlas/'",
+  "devCommand": "cd atlas && npm run dev"
+}

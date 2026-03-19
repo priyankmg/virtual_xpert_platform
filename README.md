@@ -465,21 +465,6 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### Demo Walkthrough
-
-Walk through this sequence to demonstrate the full VEP story:
-
-1. **Dashboard** — Show Marcus Rivera's work queue. 6 sessions today, Sarah Chen's at 2 PM is in progress.
-2. **Click "Generate Session Brief"** — Watch the full pipeline run (DAS → all agents in ~2s).
-3. **Session Brief** — Show what Marcus sees before the session: complete, confidence-scored, ready.
-4. **Live Session View** — Show real-time AI assistance: Intuit Assistant answering "Is her home office deductible?", RAG surfacing precedents inline.
-5. **Policy Review** — Show contractor misclassification flag with TC-2019-0124 precedent attached.
-6. **Tax Estimate** — Show three scenarios, toggle a deduction off to see real-time impact.
-7. **Governance** — Show audit log and an ACTION item pending Marcus's approval before it reaches Sarah.
-8. **Agent Control Panel** — Show individual agent triggers and live output previews.
-
-**The demo arc:** *Data fragmentation → aggregation → AI-powered analysis → human expert confirmation → governed audit trail. That is the VEP story.*
-
 ---
 
 ## Design Guidelines

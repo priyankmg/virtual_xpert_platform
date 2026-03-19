@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Header from '@/components/layout/Header';
 import {
   Database, FileText, ShieldCheck, Search, Calculator,
-  ClipboardList, Sparkles, Play, Loader2, CheckCircle2,
+  ClipboardList, Play, Loader2, CheckCircle2,
   XCircle, ArrowRight, ChevronDown, ChevronUp, Zap,
-  Clock, AlertTriangle, HeartPulse,
+  AlertTriangle, HeartPulse, GitCompare, RefreshCw,
+  CheckCheck, FileWarning, TriangleAlert,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -433,6 +434,247 @@ function AgentCard({ agent, state, onRun }: { agent: AgentDef; state: AgentState
   );
 }
 
+/* ─── Contract Change Simulator ─────────────────────────────────────────────── */
+
+interface SimStep {
+  id: string;
+  icon: React.ReactNode;
+  label: string;
+  detail: React.ReactNode;
+  durationMs: number;
+  type: 'detect' | 'warn' | 'remap' | 'validate' | 'log' | 'ok';
+}
+
+const SIM_STEPS: SimStep[] = [
+  {
+    id: 's1', type: 'detect', durationMs: 900,
+    icon: <RefreshCw size={13} />,
+    label: 'Polling ADP Payroll API — GET /v2/employees',
+    detail: <span className="text-slate-500">Routine heartbeat check against <code className="bg-slate-100 px-1 rounded text-xs">adp.api.intuit.com/v2/employees</code></span>,
+  },
+  {
+    id: 's2', type: 'warn', durationMs: 1100,
+    icon: <FileWarning size={13} />,
+    label: 'Schema drift detected on ADP Payroll response',
+    detail: (
+      <div className="space-y-1.5">
+        <div className="text-xs text-amber-700 font-semibold">Expected contract field missing from response:</div>
+        <div className="flex items-center gap-3 font-mono text-xs">
+          <span className="px-2 py-1 bg-red-100 text-red-700 rounded line-through">employee_id</span>
+          <ArrowRight size={12} className="text-slate-400 shrink-0" />
+          <span className="px-2 py-1 bg-green-100 text-green-700 rounded">emp_id</span>
+        </div>
+        <div className="text-[11px] text-slate-500">Field renamed in ADP API v2.4 rollout — breaking change detected in adapter layer.</div>
+      </div>
+    ),
+  },
+  {
+    id: 's3', type: 'remap', durationMs: 800,
+    icon: <GitCompare size={13} />,
+    label: 'Applying automatic field remapping in adapter',
+    detail: (
+      <div className="font-mono text-xs space-y-1">
+        <div className="text-slate-500">// Atlas adapter: adp-payroll-mapper.ts</div>
+        <div><span className="text-red-500 line-through">response.employee_id</span></div>
+        <div><span className="text-green-600">response.emp_id ?? response.employee_id  </span><span className="text-slate-400">// fallback for v2.3</span></div>
+      </div>
+    ),
+  },
+  {
+    id: 's4', type: 'validate', durationMs: 700,
+    icon: <CheckCheck size={13} />,
+    label: 'Validating remapped data against Atlas schema',
+    detail: (
+      <div className="text-xs space-y-1">
+        <div className="flex items-center gap-2"><CheckCircle2 size={11} className="text-green-500" /><span>All 22 employee records resolved via <code className="bg-slate-100 px-1 rounded">emp_id</code></span></div>
+        <div className="flex items-center gap-2"><CheckCircle2 size={11} className="text-green-500" /><span>Payroll totals reconciled — $0 delta vs prior snapshot</span></div>
+        <div className="flex items-center gap-2"><CheckCircle2 size={11} className="text-green-500" /><span>No data gaps introduced; pipeline can proceed</span></div>
+      </div>
+    ),
+  },
+  {
+    id: 's5', type: 'log', durationMs: 600,
+    icon: <ClipboardList size={13} />,
+    label: 'Contract change logged to Governance store',
+    detail: (
+      <div className="text-xs space-y-1 text-slate-500">
+        <div><span className="font-semibold text-slate-700">Event:</span> API_CONTRACT_CHANGE</div>
+        <div><span className="font-semibold text-slate-700">System:</span> ADP Payroll  ·  <span className="font-semibold text-slate-700">Field:</span> employee_id → emp_id</div>
+        <div><span className="font-semibold text-slate-700">Resolution:</span> AUTO_REMAPPED  ·  <span className="font-semibold text-slate-700">Risk:</span> LOW</div>
+        <div><span className="font-semibold text-slate-700">Action required:</span> Update adapter contract baseline in next deploy</div>
+      </div>
+    ),
+  },
+  {
+    id: 's6', type: 'ok', durationMs: 500,
+    icon: <CheckCircle2 size={13} />,
+    label: 'Pipeline resumed — data contract self-healed',
+    detail: <span className="text-green-700 text-xs">ADP Payroll data is available for the current session brief. No expert interruption required. Adapter contract flagged for baseline update.</span>,
+  },
+];
+
+const STEP_COLORS = {
+  detect:   { bg: 'bg-blue-50',   border: 'border-blue-200',   icon: 'bg-blue-100 text-blue-600',  text: 'text-blue-800'   },
+  warn:     { bg: 'bg-amber-50',  border: 'border-amber-200',  icon: 'bg-amber-100 text-amber-700', text: 'text-amber-800'  },
+  remap:    { bg: 'bg-purple-50', border: 'border-purple-200', icon: 'bg-purple-100 text-purple-700', text: 'text-purple-800' },
+  validate: { bg: 'bg-teal-50',   border: 'border-teal-200',   icon: 'bg-teal-100 text-teal-700',  text: 'text-teal-800'   },
+  log:      { bg: 'bg-slate-50',  border: 'border-slate-200',  icon: 'bg-slate-100 text-slate-600', text: 'text-slate-700'  },
+  ok:       { bg: 'bg-green-50',  border: 'border-green-200',  icon: 'bg-green-100 text-green-700', text: 'text-green-800'  },
+};
+
+function ContractChangeSimulator() {
+  const [simState, setSimState] = useState<'idle' | 'running' | 'done'>('idle');
+  const [currentStep, setCurrentStep] = useState(-1);
+  const [completedSteps, setCompletedSteps] = useState<Set<number>>(new Set());
+  const cancelRef = useRef(false);
+
+  const runSimulation = async () => {
+    cancelRef.current = false;
+    setSimState('running');
+    setCurrentStep(-1);
+    setCompletedSteps(new Set());
+
+    for (let i = 0; i < SIM_STEPS.length; i++) {
+      if (cancelRef.current) break;
+      setCurrentStep(i);
+      await new Promise(r => setTimeout(r, SIM_STEPS[i].durationMs));
+      if (cancelRef.current) break;
+      setCompletedSteps(prev => new Set([...prev, i]));
+    }
+
+    if (!cancelRef.current) setSimState('done');
+  };
+
+  const reset = () => {
+    cancelRef.current = true;
+    setSimState('idle');
+    setCurrentStep(-1);
+    setCompletedSteps(new Set());
+  };
+
+  return (
+    <div className="card overflow-hidden">
+      {/* Header */}
+      <div className="p-5">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-amber-50">
+            <TriangleAlert size={18} className="text-amber-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-sm font-semibold text-[#1E293B]">Data Contract Change — ADP Payroll API</span>
+              <span className="badge-read flex-shrink-0">SIMULATION</span>
+            </div>
+            <div className="text-xs font-medium mt-0.5 text-[#94A3B8]">Orchestration Plane · Self-Healing Agent</div>
+          </div>
+        </div>
+
+        <div className="px-3 py-2 rounded-lg mb-3 text-xs font-semibold bg-amber-50 text-amber-700">
+          Simulate: ADP Payroll API v2.4 renames <code className="font-mono">employee_id</code> → <code className="font-mono">emp_id</code> — agent detects, remaps, and self-heals without interrupting Marcus
+        </div>
+
+        <p className="text-xs leading-relaxed text-[#64748B] mb-4">
+          Watch the Self-Healing Agent detect a breaking field rename in the ADP Payroll API contract,
+          automatically apply a compatibility remap in the adapter layer, validate data integrity,
+          and log the contract drift — all before Marcus notices anything.
+        </p>
+
+        <div className="flex items-center gap-3">
+          {simState !== 'running' && (
+            <button
+              onClick={runSimulation}
+              className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold btn-primary"
+            >
+              <Play size={14} />
+              {simState === 'done' ? 'Run Again' : 'Run Simulation'}
+            </button>
+          )}
+          {simState === 'running' && (
+            <button
+              onClick={reset}
+              className="flex items-center gap-2 py-2.5 px-4 rounded-xl text-sm font-semibold text-slate-600 border border-slate-200 hover:bg-slate-50 transition-colors"
+            >
+              <XCircle size={14} />
+              Stop
+            </button>
+          )}
+          {simState === 'done' && (
+            <button onClick={reset} className="text-xs text-slate-400 hover:text-slate-600 transition-colors">
+              Reset
+            </button>
+          )}
+          <Link href="/governance" className="text-xs font-semibold ml-auto text-[#0077C5]">
+            View Contract Log →
+          </Link>
+        </div>
+      </div>
+
+      {/* Step-by-step trace */}
+      {simState !== 'idle' && (
+        <div className="border-t border-[var(--border-color)]">
+          <div className="px-5 py-2.5 text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider bg-slate-50 border-b border-[var(--border-color)]">
+            Live Agent Trace — ADP Payroll Contract Heal
+          </div>
+          <div className="divide-y divide-[var(--border-color)]">
+            {SIM_STEPS.map((step, i) => {
+              const isActive = currentStep === i && !completedSteps.has(i);
+              const isDone = completedSteps.has(i);
+              const isPending = i > currentStep;
+              const colors = STEP_COLORS[step.type];
+
+              return (
+                <div
+                  key={step.id}
+                  className={`px-5 py-3 transition-all ${isDone ? colors.bg : isActive ? 'bg-blue-50' : 'bg-white'} ${isPending ? 'opacity-40' : ''}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 transition-all ${
+                      isDone ? colors.icon :
+                      isActive ? 'bg-blue-100 text-blue-600' :
+                      'bg-slate-100 text-slate-400'
+                    }`}>
+                      {isActive
+                        ? <Loader2 size={11} className="animate-spin" />
+                        : isDone
+                        ? step.icon
+                        : <span className="text-[10px] font-bold">{i + 1}</span>
+                      }
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className={`text-xs font-semibold ${isDone ? colors.text : isActive ? 'text-blue-700' : 'text-slate-400'}`}>
+                        {step.label}
+                      </div>
+                      {(isDone || isActive) && (
+                        <div className="mt-1.5">{step.detail}</div>
+                      )}
+                    </div>
+                    {isDone && (
+                      <CheckCircle2 size={13} className={`shrink-0 mt-0.5 ${step.type === 'warn' ? 'text-amber-500' : 'text-green-500'}`} />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {simState === 'done' && (
+            <div className="px-5 py-4 bg-green-50 border-t border-green-200 flex items-center gap-3">
+              <CheckCircle2 size={16} className="text-green-600 shrink-0" />
+              <div>
+                <div className="text-sm font-semibold text-green-800">Self-heal complete — 0 disruption to Marcus</div>
+                <div className="text-xs text-green-600 mt-0.5">
+                  ADP Payroll field remapped in ~{SIM_STEPS.reduce((s, st) => s + st.durationMs, 0) / 1000}s.
+                  Contract drift logged. Atlas adapter flagged for baseline update in next CI deploy.
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── Page ────────────────────────────────────────────── */
 export default function AgentControlPanel() {
   const [agentStates, setAgentStates] = useState<Record<string, AgentState>>(
@@ -558,6 +800,13 @@ export default function AgentControlPanel() {
                 />
               ))}
             </div>
+
+            {/* Contract change simulation lives in Platform Health */}
+            {group.label === 'Platform Health' && (
+              <div className="mt-4">
+                <ContractChangeSimulator />
+              </div>
+            )}
           </section>
         ))}
 

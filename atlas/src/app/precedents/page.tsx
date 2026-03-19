@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Header from '@/components/layout/Header';
-import { Search, X } from 'lucide-react';
+import { Search, X, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import ClientBanner from '@/components/ui/ClientBanner';
 import { irsPrecedents } from '@/data/mock/irs-precedents';
 
@@ -21,17 +21,129 @@ interface Precedent {
   relevanceScore?: number;
 }
 
-const QUICK_FILTERS = ['contractor', 'S-Corp', 'home office', 'meals', 'Section 179', 'QBI', 'inventory', 'payroll'];
+// ── Precedent type categories ─────────────────────────────────────────────────
+interface PrecedentType {
+  value: string;
+  label: string;
+  description: string;
+  keywords: string[];
+  color: string;
+  count?: number;
+}
 
+const PRECEDENT_TYPES: PrecedentType[] = [
+  {
+    value: 'all',
+    label: 'All Types',
+    description: 'Show all IRS precedents in the library',
+    keywords: [],
+    color: 'text-slate-600',
+  },
+  {
+    value: 'contractor',
+    label: 'Contractor Classification',
+    description: 'Worker classification — employee vs 1099 contractor rulings',
+    keywords: ['1099', 'contractor', 'employee', 'worker classification', 'payroll tax'],
+    color: 'text-red-600',
+  },
+  {
+    value: 'scorp',
+    label: 'S-Corp & Compensation',
+    description: 'S-Corp reasonable compensation, distributions, FICA avoidance',
+    keywords: ['reasonable compensation', 'S-Corp', 'distributions', 'FICA', 'owner salary', '199A'],
+    color: 'text-orange-600',
+  },
+  {
+    value: 'home-office',
+    label: 'Home Office',
+    description: 'IRC 280A exclusive use, home office deduction eligibility',
+    keywords: ['home office', '280A', 'exclusive use', 'regular use', 'deduction'],
+    color: 'text-blue-600',
+  },
+  {
+    value: 'meals',
+    label: 'Meals & Entertainment',
+    description: 'IRC 274, post-TCJA entertainment disallowance, 50% meal limit',
+    keywords: ['meals', 'entertainment', '274', 'business purpose', 'TCJA', '50% limit'],
+    color: 'text-amber-600',
+  },
+  {
+    value: 'depreciation',
+    label: 'Depreciation & Section 179',
+    description: 'Section 179 expensing, recapture, bonus depreciation',
+    keywords: ['Section 179', 'recapture', 'depreciation', 'recovery period', '4562'],
+    color: 'text-purple-600',
+  },
+  {
+    value: 'payroll',
+    label: 'Payroll Tax',
+    description: 'FTD penalties, 941/940 filings, first-time abatement',
+    keywords: ['payroll tax deposit', 'FTD penalty', '941', 'first-time abatement', 'FTA', '940'],
+    color: 'text-teal-600',
+  },
+  {
+    value: 'qbi',
+    label: 'QBI & Pass-Through',
+    description: 'IRC 199A qualified business income, SSTB classification',
+    keywords: ['199A', 'QBI', 'specified service', 'SSTB', 'consulting', 'phase-out'],
+    color: 'text-green-600',
+  },
+  {
+    value: 'inventory',
+    label: 'Inventory & COGS',
+    description: 'Inventory write-downs, lower of cost or market, FIFO/LIFO',
+    keywords: ['inventory', 'write-down', 'COGS', 'lower of cost or market', 'obsolescence', 'FIFO'],
+    color: 'text-indigo-600',
+  },
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function filterByType(precedents: Precedent[], typeValue: string): Precedent[] {
+  if (typeValue === 'all') return precedents;
+  const type = PRECEDENT_TYPES.find(t => t.value === typeValue);
+  if (!type) return precedents;
+  return precedents.filter(p =>
+    type.keywords.some(kw =>
+      p.relevanceKeywords.some(rk => rk.toLowerCase().includes(kw.toLowerCase())) ||
+      p.topic.toLowerCase().includes(kw.toLowerCase()) ||
+      p.title.toLowerCase().includes(kw.toLowerCase())
+    )
+  );
+}
+
+function filterByQuery(precedents: Precedent[], q: string): Precedent[] {
+  if (!q.trim()) return precedents;
+  const lower = q.toLowerCase();
+  return precedents.filter(p =>
+    p.title.toLowerCase().includes(lower) ||
+    p.topic.toLowerCase().includes(lower) ||
+    p.keyFacts.toLowerCase().includes(lower) ||
+    p.relevanceKeywords.some(kw => kw.toLowerCase().includes(lower))
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
 export default function Precedents() {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Precedent[]>(irsPrecedents);
-  const [loading, setLoading] = useState(false);
+  const [selectedType, setSelectedType] = useState('all');
+  const [typeDropdownOpen, setTypeDropdownOpen] = useState(false);
   const [selected, setSelected] = useState<Precedent | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [aiResults, setAiResults] = useState<Precedent[] | null>(null);
 
-  const search = async (q: string) => {
-    setQuery(q);
-    if (!q.trim()) { setResults(irsPrecedents); return; }
+  const activeType = PRECEDENT_TYPES.find(t => t.value === selectedType) ?? PRECEDENT_TYPES[0];
+
+  // Local filtered results (type + text query)
+  const localResults = useMemo(() => {
+    const typed = filterByType(irsPrecedents, selectedType);
+    return filterByQuery(typed, query);
+  }, [selectedType, query]);
+
+  const displayResults = aiResults ?? localResults;
+
+  // AI RAG search (only when query is non-trivial)
+  const runAiSearch = async (q: string) => {
+    if (!q.trim() || q.length < 4) { setAiResults(null); return; }
     setLoading(true);
     try {
       const res = await fetch('/api/agents/rag', {
@@ -39,9 +151,25 @@ export default function Precedents() {
         body: JSON.stringify({ query: q, clientId: 'CLIENT-001' }),
       });
       const data = await res.json();
-      setResults(data.precedents?.length > 0 ? data.precedents : irsPrecedents);
-    } catch { setResults(irsPrecedents); }
+      if (data.precedents?.length > 0) setAiResults(data.precedents);
+      else setAiResults(null);
+    } catch {
+      setAiResults(null);
+    }
     setLoading(false);
+  };
+
+  const handleQueryChange = (v: string) => {
+    setQuery(v);
+    if (!v) setAiResults(null);
+    else runAiSearch(v);
+  };
+
+  const handleTypeSelect = (value: string) => {
+    setSelectedType(value);
+    setTypeDropdownOpen(false);
+    setAiResults(null);
+    setQuery('');
   };
 
   return (
@@ -49,83 +177,164 @@ export default function Precedents() {
       <Header title="IRS Precedent Library" subtitle="Tax Court rulings, audit cases, and IRS guidance" />
       <ClientBanner />
 
-      <div className="flex-1 p-4 sm:p-6 lg:p-8">
-        {/* Search */}
-        <div className="relative mb-4 max-w-xl">
-          <Search size={16} className="absolute left-3.5 top-3.5 text-slate-400" />
-          <input
-            className="w-full pl-10 pr-4 py-3 rounded-xl text-sm outline-none transition-shadow"
-            style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', color: '#1E293B', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
-            placeholder="Search by keyword, topic, or issue (e.g. 'contractor classification')"
-            value={query}
-            onChange={e => search(e.target.value)}
-          />
-          {query && (
-            <button onClick={() => search('')} className="absolute right-3.5 top-3.5 p-0.5 rounded hover:bg-slate-100 transition-colors">
-              <X size={14} className="text-slate-400" />
-            </button>
-          )}
-        </div>
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-3xl">
 
-        {/* Quick filters */}
-        <div className="flex gap-2 mb-5 flex-wrap">
-          {QUICK_FILTERS.map(kw => (
-            <button
-              key={kw}
-              onClick={() => search(query === kw ? '' : kw)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                query === kw
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-white border border-slate-200 text-slate-500 hover:border-blue-300 hover:text-blue-600'
-              }`}
-            >
-              {kw}
-            </button>
-          ))}
-          {query && (
-            <button onClick={() => search('')} className="px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
-              Clear
-            </button>
-          )}
-        </div>
+        {/* ── Single IRS Precedent Card ── */}
+        <div className="card overflow-hidden">
 
-        <div className="text-xs font-semibold mb-4" style={{ color: '#94A3B8' }}>
-          {loading ? 'Searching…' : `${results.length} case${results.length !== 1 ? 's' : ''} ${query ? `matching "${query}"` : 'in library'}`}
-        </div>
+          {/* Card header */}
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border-color)] bg-slate-50">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+              <BookOpen size={16} className="text-amber-700" />
+            </div>
+            <div>
+              <div className="font-semibold text-[var(--text-primary)]">IRS Precedent Search</div>
+              <div className="text-xs text-[var(--text-muted)]">{irsPrecedents.length} cases in library · Atlas RAG-powered</div>
+            </div>
+          </div>
 
-        {/* Cards grid — responsive */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {results.map(p => (
-            <div
-              key={p.id}
-              onClick={() => setSelected(p)}
-              className="card p-5 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all"
-            >
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <div className="min-w-0">
-                  <div className="text-sm font-semibold leading-snug" style={{ color: '#1E293B' }}>{p.title}</div>
-                  <div className="text-xs mt-0.5 font-medium" style={{ color: '#94A3B8' }}>{p.citationId}</div>
-                </div>
-                <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-slate-100 text-slate-500">{p.year}</span>
-                  {(p.relevanceScore ?? 0) > 0 && (
-                    <span className="text-xs font-semibold" style={{ color: '#0077C5' }}>{(p.relevanceScore! * 100).toFixed(0)}% match</span>
-                  )}
-                </div>
-              </div>
-              <p className="text-xs leading-relaxed mb-3" style={{ color: '#64748B' }}>{p.topic}</p>
-              <div className="flex items-center justify-between">
-                <span className={`text-xs font-semibold ${(p.taxpayerOutcome ?? '').startsWith('WON') ? 'text-green-600' : 'text-red-600'}`}>
-                  {(p.taxpayerOutcome ?? '').split(' — ')[0] || '—'}
-                </span>
-                <div className="flex gap-1 flex-wrap justify-end max-w-[180px]">
-                  {p.relevanceKeywords.slice(0, 3).map(kw => (
-                    <span key={kw} className="text-xs px-1.5 py-0.5 rounded font-medium bg-slate-100 text-slate-500">{kw}</span>
-                  ))}
-                </div>
+          <div className="p-5 space-y-4">
+
+            {/* Type selector dropdown */}
+            <div>
+              <label className="block text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-1.5">
+                What type of precedent are you looking for?
+              </label>
+              <div className="relative">
+                <button
+                  onClick={() => setTypeDropdownOpen(v => !v)}
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl text-sm text-left transition-all"
+                  style={{ background: '#FFFFFF', border: '1.5px solid #0077C5', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className={`font-semibold ${activeType.color}`}>{activeType.label}</span>
+                    <span className="text-xs text-[var(--text-muted)] truncate hidden sm:block">— {activeType.description}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--intuit-blue-light)] text-[var(--intuit-blue)] font-semibold">
+                      {filterByType(irsPrecedents, selectedType).length} cases
+                    </span>
+                    {typeDropdownOpen ? <ChevronUp size={14} className="text-[var(--intuit-blue)]" /> : <ChevronDown size={14} className="text-[var(--intuit-blue)]" />}
+                  </div>
+                </button>
+
+                {typeDropdownOpen && (
+                  <div
+                    className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden shadow-xl z-20"
+                    style={{ background: '#FFFFFF', border: '1px solid #E2E8F0' }}
+                  >
+                    {PRECEDENT_TYPES.map(type => {
+                      const count = filterByType(irsPrecedents, type.value).length;
+                      return (
+                        <button
+                          key={type.value}
+                          onClick={() => handleTypeSelect(type.value)}
+                          className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors border-b border-[var(--border-color)] last:border-0 ${selectedType === type.value ? 'bg-[var(--intuit-blue-light)]' : ''}`}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <div className={`text-sm font-semibold ${type.color}`}>{type.label}</div>
+                            <div className="text-xs text-[var(--text-muted)] mt-0.5">{type.description}</div>
+                          </div>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium shrink-0 mt-0.5">
+                            {count}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
-          ))}
+
+            {/* Search bar */}
+            <div className="relative">
+              <Search size={15} className="absolute left-3.5 top-3 text-slate-400" />
+              <input
+                className="w-full pl-10 pr-9 py-2.5 rounded-xl text-sm outline-none transition-shadow"
+                style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', color: '#1E293B' }}
+                placeholder="Refine by keyword (e.g. 'exclusive use', 'recapture')…"
+                value={query}
+                onChange={e => handleQueryChange(e.target.value)}
+              />
+              {query && (
+                <button onClick={() => { setQuery(''); setAiResults(null); }} className="absolute right-3 top-2.5 p-0.5 rounded hover:bg-slate-100 transition-colors">
+                  <X size={14} className="text-slate-400" />
+                </button>
+              )}
+            </div>
+
+            {/* Results count */}
+            <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
+              <span>
+                {loading ? 'Searching via AI RAG…' : (
+                  <>
+                    <span className="font-semibold text-[var(--text-primary)]">{displayResults.length}</span>
+                    {' '}case{displayResults.length !== 1 ? 's' : ''}
+                    {aiResults ? ' · AI-ranked results' : query ? ` matching "${query}"` : selectedType !== 'all' ? ` · ${activeType.label}` : ' in library'}
+                  </>
+                )}
+              </span>
+              {aiResults && (
+                <button onClick={() => setAiResults(null)} className="text-xs text-[var(--intuit-blue)] hover:underline">
+                  Clear AI results
+                </button>
+              )}
+            </div>
+
+            {/* Results list */}
+            {displayResults.length === 0 ? (
+              <div className="text-center py-8 text-[var(--text-muted)]">
+                <BookOpen size={28} className="mx-auto mb-2 opacity-30" />
+                <div className="text-sm">No cases match your search.</div>
+                <button onClick={() => { setQuery(''); setSelectedType('all'); setAiResults(null); }} className="text-xs text-[var(--intuit-blue)] mt-1 hover:underline">
+                  Clear filters
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y divide-[var(--border-color)] -mx-5 -mb-5">
+                {displayResults.map((p, i) => {
+                  const won = (p.taxpayerOutcome ?? '').startsWith('WON');
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelected(p)}
+                      className="w-full flex items-start gap-4 px-5 py-4 text-left hover:bg-slate-50 transition-colors group"
+                    >
+                      {/* Number + year */}
+                      <div className="flex flex-col items-center gap-1 shrink-0 pt-0.5">
+                        <span className="text-xs text-[var(--text-muted)] font-medium w-5 text-center">#{i + 1}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500 font-medium">{p.year}</span>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="text-sm font-semibold text-[var(--text-primary)] leading-snug group-hover:text-[var(--intuit-blue)] transition-colors">
+                            {p.title}
+                          </div>
+                          {(p.relevanceScore ?? 0) > 0 && (
+                            <span className="text-xs font-semibold text-[var(--intuit-blue)] shrink-0">
+                              {(p.relevanceScore! * 100).toFixed(0)}% match
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-xs text-[var(--text-muted)] mt-0.5">{p.citationId}</div>
+                        <div className="text-xs text-[var(--text-secondary)] mt-1 leading-relaxed line-clamp-2">{p.topic}</div>
+                        <div className="flex items-center gap-2 mt-2 flex-wrap">
+                          <span className={`text-xs font-semibold ${won ? 'text-green-600' : 'text-red-600'}`}>
+                            {(p.taxpayerOutcome ?? '').split(' — ')[0] || '—'}
+                          </span>
+                          {p.relevanceKeywords.slice(0, 3).map(kw => (
+                            <span key={kw} className="text-[10px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">{kw}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

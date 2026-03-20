@@ -10,7 +10,7 @@
 | **Core Use Case** | Expert pre-session prep, live in-session AI assistance, and post-session quality review |
 | **Featured Client** | Sarah Chen, Controller — Meridian Home Goods (S-Corp, 85 employees, $12M revenue) |
 | **Stack** | Next.js 15, TypeScript, Tailwind CSS, Anthropic Claude (claude-opus-4-5), Neon Postgres |
-| **Deployment** | Vercel |
+| **Deployment** | Vercel (project **Root Directory** = repository root — do not use a nested `atlas/` folder) |
 
 ---
 
@@ -293,8 +293,9 @@ GET  /api/governance/pending        — retrieve pending approvals
 
 ## 9. Directory Structure
 
+Repository root (clone of `virtual_xpert_platform` — the Next.js app lives here):
+
 ```
-atlas/
   src/
     app/
       api/
@@ -367,8 +368,10 @@ atlas/
       dashboard/
   .env.local
   package.json
-  tailwind.config.ts
+  postcss.config.mjs
+  next.config.ts
   tsconfig.json
+  vercel.json
 ```
 
 ---
@@ -441,13 +444,12 @@ atlas/
 ### Installation
 
 ```bash
-cd atlas
 npm install
 ```
 
 ### Environment Setup
 
-Create `atlas/.env.local`:
+Create `.env.local` in the repository root:
 
 ```env
 ANTHROPIC_API_KEY=your_anthropic_api_key_here
@@ -459,7 +461,6 @@ DATABASE_URL=your_neon_postgres_url_here   # optional for prototype
 ### Running Locally
 
 ```bash
-cd atlas
 npm run dev
 ```
 

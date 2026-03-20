@@ -21,26 +21,26 @@ interface NavTooltipMeta {
 const NAV_TOOLTIPS: Record<string, NavTooltipMeta> = {
   '/precedents': {
     tip: 'You haven\'t used IRS Precedents in a while. Tap to search case history for your active clients.',
-    lastVisitedKey: 'atlas_visited_precedents',
+    lastVisitedKey: 'vep_nav_visited_precedents',
   },
   '/governance': {
     tip: 'Governance Log tracks every AI action taken — including auto-approved LOW-risk items.',
-    lastVisitedKey: 'atlas_visited_governance',
+    lastVisitedKey: 'vep_nav_visited_governance',
   },
   '/admin-metrics': {
     tip: 'New: Admin Engagement Dashboard — user adoption funnel, feature usage & AI model trends for product teams.',
     isNew: true,
-    lastVisitedKey: 'atlas_visited_admin_metrics',
+    lastVisitedKey: 'vep_nav_visited_admin_metrics',
   },
   '/agents': {
     tip: 'New: Self-Healing API Agent now monitors all source systems in real time.',
     isNew: true,
-    lastVisitedKey: 'atlas_visited_agents',
+    lastVisitedKey: 'vep_nav_visited_agents',
   },
   '/my-metrics': {
     tip: 'New: AI-generated performance summary now appears at the top of your metrics.',
     isNew: true,
-    lastVisitedKey: 'atlas_visited_my_metrics',
+    lastVisitedKey: 'vep_nav_visited_my_metrics',
   },
 };
 

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, ChevronLeft, ChevronRight, Zap, BarChart3, Bot, ShieldCheck, ArrowRight } from 'lucide-react';
 
-const STORAGE_KEY = 'atlas_whats_new_seen_v3';
+const STORAGE_KEY = 'vep_whats_new_seen_v4';
 
 interface Slide {
   badge: string;

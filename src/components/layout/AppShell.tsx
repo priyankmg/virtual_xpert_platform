@@ -2,6 +2,7 @@
 
 import { useState, createContext, useContext } from 'react';
 import Sidebar from './Sidebar';
+import SiteFooter from './SiteFooter';
 import WhatsNewModal from '@/components/ui/WhatsNewModal';
 
 // ── Sidebar context ────────────────────────────────────────────────────────────
@@ -53,7 +54,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <WhatsNewModal />
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
         <div className="lg:ml-64 min-h-screen flex flex-col">
-          {children}
+          <div className="flex-1 flex flex-col min-h-0">
+            {children}
+          </div>
+          <SiteFooter />
         </div>
       </ClientContext.Provider>
     </SidebarContext.Provider>

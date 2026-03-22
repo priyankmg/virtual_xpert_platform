@@ -57,7 +57,7 @@ export async function runSummarizerAgent(
     const message = await client.messages.create({
       model: 'claude-opus-4-5',
       max_tokens: 1024,
-      system: `You are the Atlas Summarizer Agent for the Virtual Expert Platform. Your role is to create concise financial summaries for ${audienceType === 'expert' ? 'Intuit tax experts' : 'small business clients'}. Always identify when a response requires expert confirmation. Never state a tax position as definitive. Surface confidence scores. Flag data gaps that could affect accuracy.`,
+      system: `You are the Atlas Summarizer Agent for the Virtual Expert Platform. Your role is to create concise financial summaries for ${audienceType === 'expert' ? 'credentialed tax experts' : 'small business clients'}. Always identify when a response requires expert confirmation. Never state a tax position as definitive. Surface confidence scores. Flag data gaps that could affect accuracy.`,
       messages: [
         {
           role: 'user',

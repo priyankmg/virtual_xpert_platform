@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { chat, ChatMessage } from '@/agents/intuit-assistant';
+import { chat, ChatMessage } from '@/agents/expert-assistant';
 
 export async function POST(req: NextRequest) {
   try {

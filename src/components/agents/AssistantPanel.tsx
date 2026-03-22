@@ -24,7 +24,7 @@ export default function AssistantPanel({ clientId }: AssistantPanelProps) {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: "Hi! I'm the Intuit Assistant. I have access to Sarah Chen's financial data across all 6 source systems. Ask me anything about her tax situation, compliance risks, or financial position.",
+      content: "Hi! I'm the Atlas Assistant. I have access to Sarah Chen's financial data across all 6 source systems. Ask me anything about her tax situation, compliance risks, or financial position.",
       timestamp: new Date().toISOString(),
     },
   ]);
@@ -76,7 +76,7 @@ export default function AssistantPanel({ clientId }: AssistantPanelProps) {
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 w-14 h-14 rounded-2xl shadow-lg flex items-center justify-center z-50 transition-all hover:scale-105 hover:shadow-xl"
         style={{ background: '#0077C5', boxShadow: '0 4px 16px rgba(0,119,197,0.4)' }}
-        aria-label="Open Intuit Assistant"
+        aria-label="Open Atlas Assistant"
       >
         <Sparkles size={22} className="text-white" />
       </button>
@@ -94,7 +94,7 @@ export default function AssistantPanel({ clientId }: AssistantPanelProps) {
                 <Bot size={15} className="text-white" />
               </div>
               <div>
-                <div className="text-sm font-bold" style={{ color: '#1E293B' }}>Intuit Assistant</div>
+                <div className="text-sm font-bold" style={{ color: '#1E293B' }}>Atlas Assistant</div>
                 <div className="text-xs" style={{ color: '#94A3B8' }}>AI-powered · Atlas Platform</div>
               </div>
             </div>

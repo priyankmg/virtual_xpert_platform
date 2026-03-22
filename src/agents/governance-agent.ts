@@ -7,7 +7,7 @@ const agentRiskMap: Record<string, ActionType> = {
   'Summarizer Agent': 'ADVISORY',
   'Policy Evaluation Agent': 'ADVISORY',
   'Tax Estimation Classifier': 'ADVISORY',
-  'Intuit Assistant': 'ADVISORY',
+  'Atlas Assistant': 'ADVISORY',
 };
 
 export function classifyAction(agentName: string, outputDescription: string): GovernanceClassification {

@@ -2,11 +2,11 @@
 
 @layer base {
   :root {
-    --intuit-blue: #0077C5;
-    --intuit-blue-dark: #005A9E;
-    --intuit-blue-light: #E8F4FD;
-    --intuit-orange: #FF6900;
-    --intuit-orange-light: #FFF3EC;
+    --brand-blue: #0077C5;
+    --brand-blue-dark: #005A9E;
+    --brand-blue-light: #E8F4FD;
+    --accent-orange: #FF6900;
+    --accent-orange-light: #FFF3EC;
 
     --bg-page: #F1F5F9;
     --bg-card: #FFFFFF;
@@ -55,8 +55,8 @@
   }
 
   .sidebar-nav-item.active {
-    background: var(--intuit-blue-light);
-    color: var(--intuit-blue);
+    background: var(--brand-blue-light);
+    color: var(--brand-blue);
     font-weight: 600;
   }
 
@@ -122,9 +122,9 @@
   /* ── Buttons ── */
   .btn-primary {
     @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-all;
-    background: var(--intuit-blue);
+    background: var(--brand-blue);
     box-shadow: 0 1px 3px rgba(0,119,197,0.3);
-    &:hover { background: var(--intuit-blue-dark); }
+    &:hover { background: var(--brand-blue-dark); }
     &:disabled { opacity: 0.5; cursor: not-allowed; }
   }
 
@@ -142,7 +142,7 @@
 
   .btn-orange {
     @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium transition-all;
-    background: var(--intuit-orange);
+    background: var(--accent-orange);
     box-shadow: 0 1px 3px rgba(255,105,0,0.3);
     &:hover { background: #e55d00; }
     &:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -161,21 +161,21 @@
 
   .agent-badge {
     @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold;
-    background: var(--intuit-blue-light);
-    color: var(--intuit-blue);
+    background: var(--brand-blue-light);
+    color: var(--brand-blue);
     border: 1px solid #BAE0F7;
   }
 
   .expert-review-badge {
     @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold;
-    background: var(--intuit-orange-light);
-    color: var(--intuit-orange);
+    background: var(--accent-orange-light);
+    color: var(--accent-orange);
     border: 1px solid #FDCFAA;
   }
 
   .disclaimer-banner {
     @apply flex items-start gap-3 p-4 rounded-xl text-sm font-medium;
-    background: var(--intuit-orange-light);
+    background: var(--accent-orange-light);
     border: 1px solid #FDCFAA;
     color: #9A3D00;
   }

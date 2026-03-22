@@ -17,11 +17,11 @@ export default function ClientBanner({ fallbackName = 'Meridian Home Goods' }: C
   const pendingActions = 3; // could come from context/props in a fuller implementation
 
   return (
-    <div className="flex items-center gap-3 px-4 sm:px-6 lg:px-8 py-2.5 border-b border-[var(--border-color)] bg-[var(--intuit-blue-light)] flex-wrap">
-      <Building2 size={14} className="text-[var(--intuit-blue)] shrink-0" />
+    <div className="flex items-center gap-3 px-4 sm:px-6 lg:px-8 py-2.5 border-b border-[var(--border-color)] bg-[var(--brand-blue-light)] flex-wrap">
+      <Building2 size={14} className="text-[var(--brand-blue)] shrink-0" />
       <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0 text-sm">
         <span className="text-[var(--text-muted)]">Viewing data for</span>
-        <span className="font-semibold text-[var(--intuit-blue)]">{name}</span>
+        <span className="font-semibold text-[var(--brand-blue)]">{name}</span>
         <span className="text-[var(--text-muted)]">·</span>
         <span className="text-[var(--text-secondary)]">{entity}</span>
         {topic && (
@@ -40,7 +40,7 @@ export default function ClientBanner({ fallbackName = 'Meridian Home Goods' }: C
         )}
         <Link
           href="/financial-snapshot"
-          className="text-xs text-[var(--intuit-blue)] hover:underline flex items-center gap-0.5"
+          className="text-xs text-[var(--brand-blue)] hover:underline flex items-center gap-0.5"
         >
           Financial data <ChevronRight size={11} />
         </Link>

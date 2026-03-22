@@ -111,7 +111,7 @@ export default function AdminMetricsPage() {
           {/* Click-through for overrides */}
           <button
             onClick={() => setOverrideExpanded(isExpanded ? null : risk)}
-            className="mt-3 w-full flex items-center justify-between text-xs font-medium text-[var(--intuit-blue)] hover:text-[#0055A4] transition-colors pt-2 border-t border-[var(--border-color)]"
+            className="mt-3 w-full flex items-center justify-between text-xs font-medium text-[var(--brand-blue)] hover:text-[#0055A4] transition-colors pt-2 border-t border-[var(--border-color)]"
           >
             <span>View {stat.overridden} most-overridden action types</span>
             {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
@@ -174,7 +174,7 @@ export default function AdminMetricsPage() {
         {/* ── Section 1: User Adoption Funnel ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-5 flex items-center gap-2">
-            <Users size={16} className="text-[var(--intuit-blue)]" />
+            <Users size={16} className="text-[var(--brand-blue)]" />
             User Adoption Funnel
           </h2>
 
@@ -234,7 +234,7 @@ export default function AdminMetricsPage() {
           {/* Summary strip */}
           <div className="card p-4 mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-[var(--intuit-blue)]">{p.totalInvited}</div>
+              <div className="text-2xl font-bold text-[var(--brand-blue)]">{p.totalInvited}</div>
               <div className="text-xs text-[var(--text-muted)] mt-0.5">Total Invited</div>
             </div>
             <div>
@@ -255,7 +255,7 @@ export default function AdminMetricsPage() {
         {/* ── Section 2: Feature Usage ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <BarChart3 size={16} className="text-[var(--intuit-blue)]" />
+            <BarChart3 size={16} className="text-[var(--brand-blue)]" />
             Feature Usage — {p.periodLabel}
           </h2>
 
@@ -278,7 +278,7 @@ export default function AdminMetricsPage() {
                           {f.isNew && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-700 font-bold uppercase shrink-0">New</span>}
                         </div>
                         <div className="flex items-center gap-2">
-                          <div className="h-1.5 rounded-full bg-[var(--intuit-blue)] opacity-70 transition-all" style={{ width: `${(f.views / maxViews) * 120}px` }} />
+                          <div className="h-1.5 rounded-full bg-[var(--brand-blue)] opacity-70 transition-all" style={{ width: `${(f.views / maxViews) * 120}px` }} />
                           <span className="text-xs text-[var(--text-muted)]">{f.views} views · {f.uniqueUsers} users</span>
                         </div>
                       </div>
@@ -323,7 +323,7 @@ export default function AdminMetricsPage() {
         {/* ── Section 3: AI Agent Effectiveness ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <Bot size={16} className="text-[var(--intuit-blue)]" />
+            <Bot size={16} className="text-[var(--brand-blue)]" />
             AI Agent Effectiveness — {p.totalSessionsInPeriod} sessions
           </h2>
 
@@ -380,7 +380,7 @@ export default function AdminMetricsPage() {
         {/* ── Section 4: Policy Override Analysis ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
-            <ShieldCheck size={16} className="text-[var(--intuit-blue)]" />
+            <ShieldCheck size={16} className="text-[var(--brand-blue)]" />
             Policy Evaluation — Override Rate by Risk Level
           </h2>
           <p className="text-xs text-[var(--text-muted)] mb-4">
@@ -423,7 +423,7 @@ export default function AdminMetricsPage() {
         {/* ── Section 5: Monthly AI Confidence Trend ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
-            <Activity size={16} className="text-[var(--intuit-blue)]" />
+            <Activity size={16} className="text-[var(--brand-blue)]" />
             AI Model Confidence & Override Rate — Monthly Trend
           </h2>
           <p className="text-xs text-[var(--text-muted)] mb-4">
@@ -508,7 +508,7 @@ export default function AdminMetricsPage() {
                     const overDown = prev ? t.overrideRate < prev.overrideRate : null;
                     const status = confUp === null ? null : (confUp && overDown) ? 'better' : (!confUp && !overDown) ? 'worse' : 'mixed';
                     return (
-                      <tr key={t.month} className={`hover:bg-slate-50 transition-colors ${i === p.confidenceTrend.length - 1 ? 'bg-[var(--intuit-blue-light)]' : ''}`}>
+                      <tr key={t.month} className={`hover:bg-slate-50 transition-colors ${i === p.confidenceTrend.length - 1 ? 'bg-[var(--brand-blue-light)]' : ''}`}>
                         <td className="py-2 font-medium text-[var(--text-primary)]">{t.month}</td>
                         <td className="py-2 text-center text-[var(--text-secondary)]">{t.totalActions}</td>
                         <td className={`py-2 text-center font-semibold ${Math.round(t.avgConfidence * 100) >= 85 ? 'text-green-600' : 'text-amber-600'}`}>

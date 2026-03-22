@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'Atlas — Virtual Expert Platform',
-  description: 'Multi-Agent AI Platform for Intuit Tax Experts',
+  description: 'Multi-Agent AI Platform for credentialed tax experts',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

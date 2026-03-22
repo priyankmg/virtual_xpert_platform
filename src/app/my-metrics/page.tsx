@@ -54,14 +54,14 @@ function StatCard({
   icon: React.ReactNode; accent?: boolean; flag?: boolean;
 }) {
   return (
-    <div className={`card p-5 ${accent ? 'border-[var(--intuit-blue)] border-2 bg-[var(--intuit-blue-light)]' : ''}`}>
+    <div className={`card p-5 ${accent ? 'border-[var(--brand-blue)] border-2 bg-[var(--brand-blue-light)]' : ''}`}>
       <div className="flex items-start justify-between gap-3 mb-3">
-        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${accent ? 'bg-[var(--intuit-blue)] text-white' : 'bg-slate-100 text-[var(--text-secondary)]'}`}>
+        <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${accent ? 'bg-[var(--brand-blue)] text-white' : 'bg-slate-100 text-[var(--text-secondary)]'}`}>
           {icon}
         </div>
         {flag && <AlertTriangle size={14} className="text-amber-500 shrink-0" />}
       </div>
-      <div className={`text-3xl font-bold mb-1 ${accent ? 'text-[var(--intuit-blue)]' : 'text-[var(--text-primary)]'}`}>{value}</div>
+      <div className={`text-3xl font-bold mb-1 ${accent ? 'text-[var(--brand-blue)]' : 'text-[var(--text-primary)]'}`}>{value}</div>
       <div className="text-sm font-medium text-[var(--text-secondary)]">{label}</div>
       {sub && <div className="text-xs text-[var(--text-muted)] mt-0.5">{sub}</div>}
     </div>
@@ -113,7 +113,7 @@ function PolicyBar({ label, breakdown, color }: {
 // ── Inline highlight for the AI summary ──────────────────────────────────────
 function Hi({ children, color = 'blue' }: { children: React.ReactNode; color?: 'blue' | 'green' | 'orange' | 'red' }) {
   const cls = {
-    blue: 'bg-[var(--intuit-blue-light)] text-[var(--intuit-blue)]',
+    blue: 'bg-[var(--brand-blue-light)] text-[var(--brand-blue)]',
     green: 'bg-green-100 text-green-800',
     orange: 'bg-orange-100 text-orange-800',
     red: 'bg-red-100 text-red-700',
@@ -140,8 +140,8 @@ export default function MyMetricsPage() {
 
         {/* ── AI-Generated Summary ── */}
         <div className="card overflow-hidden">
-          <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-[var(--intuit-blue-light)] to-white border-b border-[var(--border-color)]">
-            <div className="w-8 h-8 rounded-lg bg-[var(--intuit-blue)] flex items-center justify-center shrink-0">
+          <div className="flex items-center gap-3 px-5 py-4 bg-gradient-to-r from-[var(--brand-blue-light)] to-white border-b border-[var(--border-color)]">
+            <div className="w-8 h-8 rounded-lg bg-[var(--brand-blue)] flex items-center justify-center shrink-0">
               <Bot size={15} className="text-white" />
             </div>
             <div>
@@ -151,7 +151,7 @@ export default function MyMetricsPage() {
               </div>
               <div className="text-xs text-[var(--text-muted)]">Feb 17 – Mar 18, 2025 · Auto-generated from session and governance data</div>
             </div>
-            <Sparkles size={16} className="ml-auto text-[var(--intuit-orange)] shrink-0" />
+            <Sparkles size={16} className="ml-auto text-[var(--accent-orange)] shrink-0" />
           </div>
 
           <div className="p-5 space-y-5">
@@ -247,14 +247,14 @@ export default function MyMetricsPage() {
         {/* ── Expert identity strip ── */}
         <div className="card p-5 flex items-center gap-4 flex-wrap justify-between">
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-full bg-[var(--intuit-blue)] text-white flex items-center justify-center text-xl font-bold shrink-0">
+            <div className="w-14 h-14 rounded-full bg-[var(--brand-blue)] text-white flex items-center justify-center text-xl font-bold shrink-0">
               MR
             </div>
             <div>
               <div className="text-lg font-bold text-[var(--text-primary)]">Marcus Rivera</div>
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {['CPA', 'QuickBooks ProAdvisor', 'TurboTax Live'].map(c => (
-                  <span key={c} className="text-xs px-2 py-0.5 rounded bg-[var(--intuit-blue-light)] text-[var(--intuit-blue)] font-medium">{c}</span>
+                  <span key={c} className="text-xs px-2 py-0.5 rounded bg-[var(--brand-blue-light)] text-[var(--brand-blue)] font-medium">{c}</span>
                 ))}
               </div>
             </div>
@@ -280,7 +280,7 @@ export default function MyMetricsPage() {
         {/* ── Section 1: Session Volume — Monthly ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <Calendar size={16} className="text-[var(--intuit-blue)]" />
+            <Calendar size={16} className="text-[var(--brand-blue)]" />
             Session Volume — Monthly
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -333,14 +333,14 @@ export default function MyMetricsPage() {
                     const isLatest = i === m.monthlyTrend.length - 1;
                     const atlasRate = Math.round((mo.briefsGenerated / mo.completed) * 100);
                     return (
-                      <tr key={mo.month} className={`transition-colors ${isLatest ? 'bg-[var(--intuit-blue-light)]' : 'hover:bg-slate-50'}`}>
+                      <tr key={mo.month} className={`transition-colors ${isLatest ? 'bg-[var(--brand-blue-light)]' : 'hover:bg-slate-50'}`}>
                         <td className="px-5 py-3 font-medium text-[var(--text-primary)]">
                           {mo.month}
-                          {isLatest && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--intuit-blue)] text-white font-semibold">Current</span>}
+                          {isLatest && <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--brand-blue)] text-white font-semibold">Current</span>}
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="flex items-center justify-center gap-1.5">
-                            <div className="h-1.5 rounded-full bg-[var(--intuit-blue)] opacity-70" style={{ width: `${(mo.completed / 22) * 36}px` }} />
+                            <div className="h-1.5 rounded-full bg-[var(--brand-blue)] opacity-70" style={{ width: `${(mo.completed / 22) * 36}px` }} />
                             <span className="font-semibold text-[var(--text-primary)]">{mo.completed}</span>
                           </div>
                         </td>
@@ -363,7 +363,7 @@ export default function MyMetricsPage() {
         {/* ── Section 2: Client Diversity ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <Users size={16} className="text-[var(--intuit-blue)]" />
+            <Users size={16} className="text-[var(--brand-blue)]" />
             Clients Worked With ({m.uniqueClientsServed} unique)
           </h2>
           <div className="card overflow-hidden">
@@ -390,7 +390,7 @@ export default function MyMetricsPage() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <div className="flex items-center justify-center gap-1.5">
-                        <div className="h-1.5 rounded-full bg-[var(--intuit-blue)]" style={{ width: `${(c.sessionsCount / 4) * 40}px` }} />
+                        <div className="h-1.5 rounded-full bg-[var(--brand-blue)]" style={{ width: `${(c.sessionsCount / 4) * 40}px` }} />
                         <span className="text-[var(--text-primary)] font-medium">{c.sessionsCount}</span>
                       </div>
                     </td>
@@ -410,7 +410,7 @@ export default function MyMetricsPage() {
         {/* ── Section 3: Policy Actions ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <ShieldCheck size={16} className="text-[var(--intuit-blue)]" />
+            <ShieldCheck size={16} className="text-[var(--brand-blue)]" />
             Policy-Based Actions — {m.totalPolicyActions} total
           </h2>
 
@@ -509,14 +509,14 @@ export default function MyMetricsPage() {
         {/* ── Section 4: Session Prep Time ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <Clock size={16} className="text-[var(--intuit-blue)]" />
+            <Clock size={16} className="text-[var(--brand-blue)]" />
             Session Prep Time (Atlas AI Pipeline)
           </h2>
 
           {/* Headline stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
-            <div className="card p-5 text-center border-[var(--intuit-blue)] border-2 bg-[var(--intuit-blue-light)]">
-              <div className="text-3xl font-bold text-[var(--intuit-blue)]">{m.avgPrepTimeMinutes} <span className="text-xl">min</span></div>
+            <div className="card p-5 text-center border-[var(--brand-blue)] border-2 bg-[var(--brand-blue-light)]">
+              <div className="text-3xl font-bold text-[var(--brand-blue)]">{m.avgPrepTimeMinutes} <span className="text-xl">min</span></div>
               <div className="text-sm font-medium text-[var(--text-secondary)] mt-1">Average Prep Time</div>
               <div className="text-xs text-[var(--text-muted)] mt-0.5">vs 40–60 min manual (pre-Atlas)</div>
             </div>

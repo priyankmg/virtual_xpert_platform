@@ -211,10 +211,10 @@ export default function Precedents() {
                     <span className="text-xs text-[var(--text-muted)] truncate hidden sm:block">— {activeType.description}</span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--intuit-blue-light)] text-[var(--intuit-blue)] font-semibold">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--brand-blue-light)] text-[var(--brand-blue)] font-semibold">
                       {filterByType(irsPrecedents, selectedType).length} cases
                     </span>
-                    {typeDropdownOpen ? <ChevronUp size={14} className="text-[var(--intuit-blue)]" /> : <ChevronDown size={14} className="text-[var(--intuit-blue)]" />}
+                    {typeDropdownOpen ? <ChevronUp size={14} className="text-[var(--brand-blue)]" /> : <ChevronDown size={14} className="text-[var(--brand-blue)]" />}
                   </div>
                 </button>
 
@@ -229,7 +229,7 @@ export default function Precedents() {
                         <button
                           key={type.value}
                           onClick={() => handleTypeSelect(type.value)}
-                          className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors border-b border-[var(--border-color)] last:border-0 ${selectedType === type.value ? 'bg-[var(--intuit-blue-light)]' : ''}`}
+                          className={`w-full flex items-start gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-colors border-b border-[var(--border-color)] last:border-0 ${selectedType === type.value ? 'bg-[var(--brand-blue-light)]' : ''}`}
                         >
                           <div className="flex-1 min-w-0">
                             <div className={`text-sm font-semibold ${type.color}`}>{type.label}</div>
@@ -275,7 +275,7 @@ export default function Precedents() {
                 )}
               </span>
               {aiResults && (
-                <button onClick={() => setAiResults(null)} className="text-xs text-[var(--intuit-blue)] hover:underline">
+                <button onClick={() => setAiResults(null)} className="text-xs text-[var(--brand-blue)] hover:underline">
                   Clear AI results
                 </button>
               )}
@@ -286,7 +286,7 @@ export default function Precedents() {
               <div className="text-center py-8 text-[var(--text-muted)]">
                 <BookOpen size={28} className="mx-auto mb-2 opacity-30" />
                 <div className="text-sm">No cases match your search.</div>
-                <button onClick={() => { setQuery(''); setSelectedType('all'); setAiResults(null); }} className="text-xs text-[var(--intuit-blue)] mt-1 hover:underline">
+                <button onClick={() => { setQuery(''); setSelectedType('all'); setAiResults(null); }} className="text-xs text-[var(--brand-blue)] mt-1 hover:underline">
                   Clear filters
                 </button>
               </div>
@@ -309,11 +309,11 @@ export default function Precedents() {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <div className="text-sm font-semibold text-[var(--text-primary)] leading-snug group-hover:text-[var(--intuit-blue)] transition-colors">
+                          <div className="text-sm font-semibold text-[var(--text-primary)] leading-snug group-hover:text-[var(--brand-blue)] transition-colors">
                             {p.title}
                           </div>
                           {(p.relevanceScore ?? 0) > 0 && (
-                            <span className="text-xs font-semibold text-[var(--intuit-blue)] shrink-0">
+                            <span className="text-xs font-semibold text-[var(--brand-blue)] shrink-0">
                               {(p.relevanceScore! * 100).toFixed(0)}% match
                             </span>
                           )}

@@ -90,7 +90,7 @@ export async function runTaxClassifierAgent(snapshot: ClientFinancialSnapshot): 
     },
     expertReviewRecommended: true,
     confidenceScore: 0.81,
-    disclaimer: 'This estimate is for planning purposes only and does not constitute tax advice. Consult your CPA or Intuit Tax Expert before making any tax filing decisions.',
+    disclaimer: 'This estimate is for planning purposes only and does not constitute tax advice. Consult your CPA or a qualified tax professional before making any tax filing decisions.',
     generatedAt: new Date().toISOString(),
   };
 

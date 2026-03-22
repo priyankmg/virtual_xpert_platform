@@ -147,7 +147,7 @@ export const platformMetrics: PlatformMetrics = {
     { name: 'Session Prep (AI Brief)',  route: '/session-prep', views: 312, uniqueUsers: 68, trend: 'up',     trendPct: 24 },
     { name: 'Work Queue / Dashboard',   route: '/',             views: 289, uniqueUsers: 76, trend: 'up',     trendPct: 11 },
     { name: 'Financial Snapshot',       route: '/financial-snapshot', views: 214, uniqueUsers: 59, trend: 'up', trendPct: 18 },
-    { name: 'Intuit Assistant (Chat)',  route: '/session-live', views: 187, uniqueUsers: 52, trend: 'up',     trendPct: 32 },
+    { name: 'Atlas Assistant (Chat)',  route: '/session-live', views: 187, uniqueUsers: 52, trend: 'up',     trendPct: 32 },
     { name: 'Policy Review',            route: '/policy-review', views: 163, uniqueUsers: 48, trend: 'stable', trendPct: 2, },
   ],
 
@@ -181,7 +181,7 @@ export const platformMetrics: PlatformMetrics = {
       trend: 'up',
     },
     {
-      name: 'Intuit Assistant',
+      name: 'Atlas Assistant',
       key: 'assistant',
       description: 'Live Q&A assistant routed across specialist agents',
       totalCalls: 341,

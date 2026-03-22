@@ -84,10 +84,10 @@ function ClientSelector({ sessions, selectedId, onChange }: {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-color)] bg-white text-sm font-medium text-[var(--text-primary)] hover:border-[var(--intuit-blue)] hover:bg-[var(--intuit-blue-light)] transition-all shadow-sm min-w-[220px] justify-between"
+        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[var(--border-color)] bg-white text-sm font-medium text-[var(--text-primary)] hover:border-[var(--brand-blue)] hover:bg-[var(--brand-blue-light)] transition-all shadow-sm min-w-[220px] justify-between"
       >
         <span className="flex items-center gap-2 truncate">
-          <Users size={14} className="text-[var(--intuit-blue)] shrink-0" />
+          <Users size={14} className="text-[var(--brand-blue)] shrink-0" />
           {selected ? selected.clientName : 'Select a client…'}
         </span>
         <ChevronDown size={14} className={`text-[var(--text-muted)] transition-transform shrink-0 ${open ? 'rotate-180' : ''}`} />
@@ -105,7 +105,7 @@ function ClientSelector({ sessions, selectedId, onChange }: {
                 <button
                   key={s.clientId}
                   onClick={() => { onChange(s); setOpen(false); }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-50 transition-colors ${isSelected ? 'bg-[var(--intuit-blue-light)]' : ''}`}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-slate-50 transition-colors ${isSelected ? 'bg-[var(--brand-blue-light)]' : ''}`}
                 >
                   <div className={`w-2 h-2 rounded-full shrink-0 ${
                     s.status === 'IN_PROGRESS' ? 'bg-blue-500 animate-pulse' :
@@ -121,7 +121,7 @@ function ClientSelector({ sessions, selectedId, onChange }: {
                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${status.bg} ${status.text} ${status.border}`}>
                       {status.icon}
                     </span>
-                    {isSelected && <Check size={13} className="text-[var(--intuit-blue)]" />}
+                    {isSelected && <Check size={13} className="text-[var(--brand-blue)]" />}
                   </div>
                 </button>
               );
@@ -152,8 +152,8 @@ function SessionCard({ session, onRunBrief, isSelected, onSelect }: {
   return (
     <div
       className={`card transition-all hover:shadow-md cursor-pointer ${
-        isActive ? 'ring-2 ring-[var(--intuit-blue)] ring-offset-1' :
-        isSelected ? 'ring-2 ring-[var(--intuit-orange)] ring-offset-1' : ''
+        isActive ? 'ring-2 ring-[var(--brand-blue)] ring-offset-1' :
+        isSelected ? 'ring-2 ring-[var(--accent-orange)] ring-offset-1' : ''
       }`}
       onClick={() => onSelect(session)}
     >
@@ -206,7 +206,7 @@ function SessionCard({ session, onRunBrief, isSelected, onSelect }: {
             <Link
               href={`/session-live/${session.clientId}`}
               onClick={e => e.stopPropagation()}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--intuit-blue)] text-white text-sm font-medium hover:bg-[var(--intuit-blue-dark)] transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--brand-blue)] text-white text-sm font-medium hover:bg-[var(--brand-blue-dark)] transition-colors"
             >
               <Zap size={14} />
               Live Session
@@ -215,7 +215,7 @@ function SessionCard({ session, onRunBrief, isSelected, onSelect }: {
           {(session.status === 'PREP_READY' || session.status === 'NOT_STARTED') && (
             <button
               onClick={e => { e.stopPropagation(); handlePrepare(); }}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--intuit-blue)] text-white text-sm font-medium hover:bg-[var(--intuit-blue-dark)] transition-colors"
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--brand-blue)] text-white text-sm font-medium hover:bg-[var(--brand-blue-dark)] transition-colors"
             >
               <Play size={13} />
               Prepare for Session
@@ -318,14 +318,14 @@ export default function DashboardPage() {
           <div className="card p-5 mb-6">
             <div className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[var(--intuit-blue)] text-white flex items-center justify-center font-semibold text-lg shrink-0">
+                <div className="w-12 h-12 rounded-full bg-[var(--brand-blue)] text-white flex items-center justify-center font-semibold text-lg shrink-0">
                   {expert.initials}
                 </div>
                 <div>
                   <h2 className="font-semibold text-[var(--text-primary)] text-lg">{expert.name}</h2>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                     {expert.credentials.map(c => (
-                      <span key={c} className="text-xs px-2 py-0.5 rounded bg-[var(--intuit-blue-light)] text-[var(--intuit-blue)] font-medium">{c}</span>
+                      <span key={c} className="text-xs px-2 py-0.5 rounded bg-[var(--brand-blue-light)] text-[var(--brand-blue)] font-medium">{c}</span>
                     ))}
                   </div>
                 </div>
@@ -343,8 +343,8 @@ export default function DashboardPage() {
                   <div className="text-xs text-[var(--text-muted)]">Atlas Adoption</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-[var(--text-primary)]">{expert.yearsWithIntuit}y</div>
-                  <div className="text-xs text-[var(--text-muted)]">at Intuit</div>
+                  <div className="text-2xl font-bold text-[var(--text-primary)]">{expert.yearsWithPlatform}y</div>
+                  <div className="text-xs text-[var(--text-muted)]">on platform</div>
                 </div>
               </div>
             </div>
@@ -354,7 +354,7 @@ export default function DashboardPage() {
         {/* Stats Row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
           {[
-            { label: 'Sessions Today', value: stats.totalToday, icon: <Calendar size={16} />, color: 'text-[var(--intuit-blue)]' },
+            { label: 'Sessions Today', value: stats.totalToday, icon: <Calendar size={16} />, color: 'text-[var(--brand-blue)]' },
             { label: 'Completed', value: stats.completed, icon: <CheckCircle2 size={16} />, color: 'text-green-600' },
             { label: 'In Progress', value: stats.inProgress, icon: <Loader2 size={16} />, color: 'text-blue-600' },
             { label: 'Upcoming', value: stats.upcoming, icon: <Users size={16} />, color: 'text-orange-600' },
@@ -385,7 +385,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href={`/session-live/${activeSession.clientId}`}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--intuit-blue)] text-white text-sm font-medium hover:bg-[var(--intuit-blue-dark)] transition-colors"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--brand-blue)] text-white text-sm font-medium hover:bg-[var(--brand-blue-dark)] transition-colors"
             >
               <Zap size={14} />
               Enter Live Session
@@ -411,7 +411,7 @@ export default function DashboardPage() {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Link href="/financial-snapshot" className="text-[var(--intuit-blue)] font-medium hover:underline flex items-center gap-1 text-xs">
+              <Link href="/financial-snapshot" className="text-[var(--brand-blue)] font-medium hover:underline flex items-center gap-1 text-xs">
                 View financial data <ChevronRight size={12} />
               </Link>
             </div>
@@ -422,10 +422,10 @@ export default function DashboardPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
-              <Calendar size={18} className="text-[var(--intuit-blue)]" />
+              <Calendar size={18} className="text-[var(--brand-blue)]" />
               Today&apos;s Session Queue
             </h2>
-            <Link href="/agents" className="text-sm text-[var(--intuit-blue)] hover:underline flex items-center gap-1">
+            <Link href="/agents" className="text-sm text-[var(--brand-blue)] hover:underline flex items-center gap-1">
               Agent Control Panel <ChevronRight size={14} />
             </Link>
           </div>
@@ -464,7 +464,7 @@ export default function DashboardPage() {
         {/* Quick Links */}
         <div>
           <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <Sparkles size={18} className="text-[var(--intuit-orange)]" />
+            <Sparkles size={18} className="text-[var(--accent-orange)]" />
             Quick Access
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -482,7 +482,7 @@ export default function DashboardPage() {
                 href={link.href}
                 className="card p-4 flex flex-col gap-2 hover:shadow-md transition-all group"
               >
-                <div className="text-[var(--intuit-blue)] group-hover:text-[var(--intuit-blue-dark)] transition-colors">{link.icon}</div>
+                <div className="text-[var(--brand-blue)] group-hover:text-[var(--brand-blue-dark)] transition-colors">{link.icon}</div>
                 <div className="font-medium text-[var(--text-primary)] text-sm">{link.label}</div>
                 <div className="text-xs text-[var(--text-muted)]">{link.desc}</div>
               </Link>

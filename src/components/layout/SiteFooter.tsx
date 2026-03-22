@@ -14,7 +14,7 @@ export default function SiteFooter() {
           href="https://www.linkedin.com/in/priyankmohan/"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-[var(--intuit-blue)] hover:underline"
+          className="font-medium text-[var(--brand-blue)] hover:underline"
         >
           LinkedIn
         </Link>
@@ -23,7 +23,7 @@ export default function SiteFooter() {
           href="https://github.com/priyankmg"
           target="_blank"
           rel="noopener noreferrer"
-          className="font-medium text-[var(--intuit-blue)] hover:underline"
+          className="font-medium text-[var(--brand-blue)] hover:underline"
         >
           GitHub
         </Link>

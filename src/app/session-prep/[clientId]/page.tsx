@@ -138,10 +138,10 @@ function AssistantPanel({ clientId }: { clientId: string }) {
     <div className={`fixed bottom-6 right-6 z-50 flex flex-col transition-all ${open ? 'w-80 sm:w-96' : 'w-auto'}`}>
       {open && (
         <div className="bg-white rounded-2xl shadow-2xl border border-[var(--border-color)] flex flex-col overflow-hidden mb-3" style={{ height: '420px' }}>
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-color)] bg-[var(--intuit-blue)]">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border-color)] bg-[var(--brand-blue)]">
             <div className="flex items-center gap-2">
               <Bot size={16} className="text-white" />
-              <span className="text-sm font-semibold text-white">Intuit Assistant</span>
+              <span className="text-sm font-semibold text-white">Atlas Assistant</span>
             </div>
             <button onClick={() => setOpen(false)} className="text-blue-200 hover:text-white transition-colors text-xs">Close</button>
           </div>
@@ -149,13 +149,13 @@ function AssistantPanel({ clientId }: { clientId: string }) {
             {messages.map(m => (
               <div key={m.id} className={`flex gap-2 ${m.role === 'user' ? 'justify-end' : ''}`}>
                 {m.role === 'assistant' && (
-                  <div className="w-6 h-6 rounded-full bg-[var(--intuit-blue)] flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-6 h-6 rounded-full bg-[var(--brand-blue)] flex items-center justify-center shrink-0 mt-0.5">
                     <Bot size={12} className="text-white" />
                   </div>
                 )}
                 <div className={`max-w-xs rounded-xl px-3 py-2 text-xs leading-relaxed ${
                   m.role === 'user'
-                    ? 'bg-[var(--intuit-blue)] text-white rounded-tr-sm'
+                    ? 'bg-[var(--brand-blue)] text-white rounded-tr-sm'
                     : 'bg-white border border-[var(--border-color)] text-[var(--text-primary)] rounded-tl-sm shadow-sm'
                 }`}>{m.content}</div>
                 {m.role === 'user' && (
@@ -167,7 +167,7 @@ function AssistantPanel({ clientId }: { clientId: string }) {
             ))}
             {loading && (
               <div className="flex gap-2">
-                <div className="w-6 h-6 rounded-full bg-[var(--intuit-blue)] flex items-center justify-center shrink-0">
+                <div className="w-6 h-6 rounded-full bg-[var(--brand-blue)] flex items-center justify-center shrink-0">
                   <Bot size={12} className="text-white" />
                 </div>
                 <div className="bg-white border border-[var(--border-color)] rounded-xl px-3 py-2 shadow-sm">
@@ -182,10 +182,10 @@ function AssistantPanel({ clientId }: { clientId: string }) {
               value={input}
               onChange={e => setInput(e.target.value)}
               placeholder="Ask about this client…"
-              className="flex-1 px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--intuit-blue)] bg-slate-50"
+              className="flex-1 px-3 py-1.5 rounded-lg border border-[var(--border-color)] text-xs focus:outline-none focus:ring-1 focus:ring-[var(--brand-blue)] bg-slate-50"
             />
             <button type="submit" disabled={!input.trim() || loading}
-              className="px-3 py-1.5 rounded-lg bg-[var(--intuit-blue)] text-white disabled:opacity-50 hover:bg-[var(--intuit-blue-dark)] transition-colors">
+              className="px-3 py-1.5 rounded-lg bg-[var(--brand-blue)] text-white disabled:opacity-50 hover:bg-[var(--brand-blue-dark)] transition-colors">
               <Send size={13} />
             </button>
           </form>
@@ -193,10 +193,10 @@ function AssistantPanel({ clientId }: { clientId: string }) {
       )}
       <button
         onClick={() => setOpen(v => !v)}
-        className="self-end flex items-center gap-2 px-4 py-3 rounded-2xl bg-[var(--intuit-blue)] text-white shadow-lg hover:bg-[var(--intuit-blue-dark)] transition-all"
+        className="self-end flex items-center gap-2 px-4 py-3 rounded-2xl bg-[var(--brand-blue)] text-white shadow-lg hover:bg-[var(--brand-blue-dark)] transition-all"
       >
         <Sparkles size={16} />
-        <span className="text-sm font-semibold">Intuit Assistant</span>
+        <span className="text-sm font-semibold">Atlas Assistant</span>
         {!open && messages.length > 1 && (
           <span className="w-5 h-5 rounded-full bg-orange-500 text-white text-xs flex items-center justify-center">{messages.length - 1}</span>
         )}
@@ -284,7 +284,7 @@ export default function SessionPrepPage() {
       <main className="flex-1 p-4 sm:p-6 max-w-4xl mx-auto w-full pb-32">
         {/* Back + client header */}
         <div className="flex items-center gap-3 mb-6">
-          <Link href="/" className="inline-flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--intuit-blue)] transition-colors">
+          <Link href="/" className="inline-flex items-center gap-1 text-sm text-[var(--text-muted)] hover:text-[var(--brand-blue)] transition-colors">
             <ArrowLeft size={15} />
             Work Queue
           </Link>
@@ -356,7 +356,7 @@ export default function SessionPrepPage() {
                   <div className="space-y-6">
                     {history.communications.map((comm, idx) => (
                       <div key={idx} className="relative pl-6 border-l-2 border-slate-200">
-                        <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-[var(--intuit-blue)] border-2 border-white" />
+                        <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-[var(--brand-blue)] border-2 border-white" />
                         <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <span className="text-xs font-semibold text-[var(--text-primary)]">{comm.date}</span>
                           <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">{comm.type}</span>
@@ -368,7 +368,7 @@ export default function SessionPrepPage() {
                             <ul className="space-y-1">
                               {comm.topicsDiscussed.map((t, i) => (
                                 <li key={i} className="flex items-start gap-1.5 text-[var(--text-muted)]">
-                                  <span className="text-[var(--intuit-blue)] shrink-0">·</span>{t}
+                                  <span className="text-[var(--brand-blue)] shrink-0">·</span>{t}
                                 </li>
                               ))}
                             </ul>
@@ -420,8 +420,8 @@ export default function SessionPrepPage() {
         {/* ── PHASE: idle — Prepare button ── */}
         {phase === 'idle' && (
           <div className="card p-8 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-[var(--intuit-blue-light)] flex items-center justify-center mx-auto mb-5">
-              <Sparkles size={28} className="text-[var(--intuit-blue)]" />
+            <div className="w-16 h-16 rounded-2xl bg-[var(--brand-blue-light)] flex items-center justify-center mx-auto mb-5">
+              <Sparkles size={28} className="text-[var(--brand-blue)]" />
             </div>
             <h2 className="text-xl font-bold text-[var(--text-primary)] mb-2">Prepare for Session</h2>
             <p className="text-[var(--text-secondary)] text-sm max-w-md mx-auto mb-2">
@@ -437,7 +437,7 @@ export default function SessionPrepPage() {
             </div>
             <button
               onClick={runPrep}
-              className="mt-8 inline-flex items-center gap-2.5 px-8 py-4 rounded-xl bg-[var(--intuit-blue)] text-white font-semibold text-base hover:bg-[var(--intuit-blue-dark)] transition-all shadow-md hover:shadow-lg"
+              className="mt-8 inline-flex items-center gap-2.5 px-8 py-4 rounded-xl bg-[var(--brand-blue)] text-white font-semibold text-base hover:bg-[var(--brand-blue-dark)] transition-all shadow-md hover:shadow-lg"
             >
               <Play size={18} />
               Prepare for Session
@@ -449,8 +449,8 @@ export default function SessionPrepPage() {
         {phase === 'running' && (
           <div className="card p-6">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-8 h-8 rounded-lg bg-[var(--intuit-blue-light)] flex items-center justify-center">
-                <Loader2 size={16} className="text-[var(--intuit-blue)] animate-spin" />
+              <div className="w-8 h-8 rounded-lg bg-[var(--brand-blue-light)] flex items-center justify-center">
+                <Loader2 size={16} className="text-[var(--brand-blue)] animate-spin" />
               </div>
               <div>
                 <div className="font-semibold text-[var(--text-primary)]">Running AI Agent Pipeline…</div>
@@ -461,7 +461,7 @@ export default function SessionPrepPage() {
             {/* Progress bar */}
             <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-6">
               <div
-                className="h-full bg-[var(--intuit-blue)] rounded-full transition-all duration-500"
+                className="h-full bg-[var(--brand-blue)] rounded-full transition-all duration-500"
                 style={{ width: `${(completedSteps.size / PREP_STEPS.length) * 100}%` }}
               />
             </div>
@@ -473,19 +473,19 @@ export default function SessionPrepPage() {
                 const isAI = step.id === 'summarize' || step.id === 'policy' || step.id === 'rag' || step.id === 'tax_classify' || step.id === 'governance';
                 return (
                   <div key={step.id} className={`flex items-center gap-3 py-2 px-3 rounded-lg transition-all ${
-                    active ? 'bg-[var(--intuit-blue-light)]' :
+                    active ? 'bg-[var(--brand-blue-light)]' :
                     done ? 'opacity-70' : 'opacity-30'
                   }`}>
                     <div className="shrink-0">
                       {done ? (
                         <CheckCircle2 size={16} className="text-green-500" />
                       ) : active ? (
-                        <Loader2 size={16} className="text-[var(--intuit-blue)] animate-spin" />
+                        <Loader2 size={16} className="text-[var(--brand-blue)] animate-spin" />
                       ) : (
                         <Circle size={16} className="text-slate-300" />
                       )}
                     </div>
-                    <span className={`text-sm ${active ? 'font-medium text-[var(--intuit-blue)]' : done ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]'}`}>
+                    <span className={`text-sm ${active ? 'font-medium text-[var(--brand-blue)]' : done ? 'text-[var(--text-secondary)]' : 'text-[var(--text-muted)]'}`}>
                       {step.label}
                     </span>
                     {isAI && (
@@ -518,7 +518,7 @@ export default function SessionPrepPage() {
             {/* Executive Summary */}
             <div className="card p-6">
               <h3 className="font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-                <Sparkles size={16} className="text-[var(--intuit-orange)]" />
+                <Sparkles size={16} className="text-[var(--accent-orange)]" />
                 Executive Summary
               </h3>
               <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{MOCK_SUMMARY.executive}</p>
@@ -527,7 +527,7 @@ export default function SessionPrepPage() {
             {/* Key Metrics */}
             <div className="card p-6">
               <h3 className="font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <TrendingUp size={16} className="text-[var(--intuit-blue)]" />
+                <TrendingUp size={16} className="text-[var(--brand-blue)]" />
                 Key Metrics
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -545,7 +545,7 @@ export default function SessionPrepPage() {
             {/* Policy Findings */}
             <div className="card p-6">
               <h3 className="font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <ShieldCheck size={16} className="text-[var(--intuit-blue)]" />
+                <ShieldCheck size={16} className="text-[var(--brand-blue)]" />
                 Policy Findings & Compliance
               </h3>
               <div className="space-y-3">
@@ -574,15 +574,15 @@ export default function SessionPrepPage() {
                       {expanded && (
                         <div className="px-4 pb-4 border-t border-[var(--border-color)] pt-3 space-y-3">
                           <p className="text-sm text-[var(--text-secondary)]">{f.description}</p>
-                          <div className="p-3 rounded-lg bg-[var(--intuit-blue-light)] border border-blue-200">
-                            <div className="text-xs font-semibold text-[var(--intuit-blue)] mb-1">Recommendation</div>
+                          <div className="p-3 rounded-lg bg-[var(--brand-blue-light)] border border-blue-200">
+                            <div className="text-xs font-semibold text-[var(--brand-blue)] mb-1">Recommendation</div>
                             <p className="text-sm text-[var(--text-primary)]">{f.recommendation}</p>
                           </div>
                           {f.precedent && (
                             <div className="flex items-center gap-2">
                               <BookOpen size={13} className="text-[var(--text-muted)]" />
                               <span className="text-xs text-[var(--text-muted)]">Precedent:</span>
-                              <Link href="/precedents" className="text-xs font-medium text-[var(--intuit-blue)] hover:underline flex items-center gap-1">
+                              <Link href="/precedents" className="text-xs font-medium text-[var(--brand-blue)] hover:underline flex items-center gap-1">
                                 {f.precedent} <ExternalLink size={10} />
                               </Link>
                             </div>
@@ -598,7 +598,7 @@ export default function SessionPrepPage() {
             {/* Tax Estimate */}
             <div className="card p-6">
               <h3 className="font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <TrendingUp size={16} className="text-[var(--intuit-blue)]" />
+                <TrendingUp size={16} className="text-[var(--brand-blue)]" />
                 3-Scenario Tax Estimate
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
@@ -621,14 +621,14 @@ export default function SessionPrepPage() {
                 </span>
               </div>
               <p className="text-xs text-[var(--text-muted)] mt-3 italic">This estimate is for planning purposes only and does not constitute tax advice. Prior year effective rate: {MOCK_SUMMARY.taxEstimate.priorYearEffectiveRate}.</p>
-              <Link href="/tax-estimate" className="inline-flex items-center gap-1 text-sm text-[var(--intuit-blue)] hover:underline mt-2">
+              <Link href="/tax-estimate" className="inline-flex items-center gap-1 text-sm text-[var(--brand-blue)] hover:underline mt-2">
                 View full 3-scenario model <ExternalLink size={12} />
               </Link>
             </div>
 
             {/* Confirm Ready */}
             {!briefConfirmed ? (
-              <div className="card p-6 bg-[var(--intuit-blue-light)] border-[var(--intuit-blue)] border-2">
+              <div className="card p-6 bg-[var(--brand-blue-light)] border-[var(--brand-blue)] border-2">
                 <div className="flex items-start gap-4 flex-wrap">
                   <div className="flex-1">
                     <h3 className="font-semibold text-[var(--text-primary)] mb-1">Ready to start the session?</h3>
@@ -638,7 +638,7 @@ export default function SessionPrepPage() {
                   </div>
                   <button
                     onClick={confirmReady}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--intuit-blue)] text-white font-semibold hover:bg-[var(--intuit-blue-dark)] transition-all shadow-md"
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--brand-blue)] text-white font-semibold hover:bg-[var(--brand-blue-dark)] transition-all shadow-md"
                   >
                     <Check size={16} />
                     Confirm — I&apos;m Ready

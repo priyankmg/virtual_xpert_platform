@@ -3,7 +3,7 @@ export interface ExpertProfile {
   name: string;
   initials: string;
   credentials: string[];
-  yearsWithIntuit: number;
+  yearsWithPlatform: number;
   specialty: string;
   csatTrailing30Days: number;
   atlasAdoptionRate: number;
@@ -54,7 +54,7 @@ export const expertProfile: ExpertProfile = {
   name: 'Marcus Rivera',
   initials: 'MR',
   credentials: ['CPA', 'QuickBooks ProAdvisor Certified', 'TurboTax Live Business Certified'],
-  yearsWithIntuit: 4,
+  yearsWithPlatform: 4,
   specialty: 'SMB accounting, S-Corp tax, payroll compliance',
   csatTrailing30Days: 4.87,
   atlasAdoptionRate: 0.94,
@@ -146,7 +146,7 @@ export const clientHistory: Record<string, ClientHistory> = {
     clientId: 'CLIENT-001',
     clientName: 'Meridian Home Goods',
     keyContext:
-      'Sarah Chen is the Controller at Meridian Home Goods, an S-Corp with 85 employees and ~$12M annual revenue. She is detail-oriented and prefers to understand the "why" behind each recommendation before acting. Has been an Intuit customer for 6 years.',
+      'Sarah Chen is the Controller at Meridian Home Goods, an S-Corp with 85 employees and ~$12M annual revenue. She is detail-oriented and prefers to understand the "why" behind each recommendation before acting. Has been on the platform for 6 years.',
     openActionItems: [
       'Sarah to provide signed lease agreement for home office review (due Jan 22 — still outstanding)',
       'Marcus to confirm Section 179 strategy on delivery van ($38K) before year-end filing',
@@ -252,7 +252,7 @@ export const clientHistory: Record<string, ClientHistory> = {
   'CLIENT-015': {
     clientId: 'CLIENT-015',
     clientName: 'NextGen Fitness',
-    keyContext: 'C-Corp, 3 gym locations. First year with Intuit. Year-end close is primary focus.',
+    keyContext: 'C-Corp, 3 gym locations. First year on the platform. Year-end close is primary focus.',
     openActionItems: ['Collect all fixed asset records for depreciation schedule'],
     communications: [
       {

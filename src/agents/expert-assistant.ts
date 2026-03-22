@@ -41,7 +41,7 @@ const AGENT_LABELS: Record<IntentCategory, string> = {
   POLICY_CHECK: 'Policy Evaluation Agent',
   PRECEDENT_LOOKUP: 'RAG Agent',
   TAX_ESTIMATE: 'Tax Classifier Agent',
-  GENERAL: 'Intuit Assistant',
+  GENERAL: 'Atlas Assistant',
 };
 
 // ── Curated mock responses used when the API key is missing or invalid ────────
@@ -113,7 +113,7 @@ Meridian is entering Q4 in a strong position with $1.87M net income YTD (+12% ov
 Session readiness: ✅ All 6 source systems aggregated. Expert review recommended before client delivery.`,
 
   GENERAL: () =>
-    `I'm the Intuit Assistant for this Atlas session. I can help Marcus prepare for the Meridian Home Goods session with:
+    `I'm the Atlas Assistant for this session. I can help Marcus prepare for the Meridian Home Goods session with:
 
 - **Tax liability questions** — "What is Sarah's Q4 estimated tax?"
 - **Policy & compliance** — "Flag any payroll compliance issues"
@@ -154,7 +154,7 @@ export async function chat(messages: ChatMessage[], clientId: string): Promise<C
     // Context gathering failed — continue without it
   }
 
-  const systemPrompt = `You are the Intuit Assistant for Atlas, a Virtual Expert Platform for financial accounting. You are helping Marcus Rivera (CPA, QuickBooks ProAdvisor) prepare for an expert session with Sarah Chen, Controller at Meridian Home Goods (S-Corp, $12.4M revenue, 85 employees, California).
+  const systemPrompt = `You are the Atlas Assistant — a Virtual Expert Platform copilot for financial accounting. You are helping Marcus Rivera (CPA, QuickBooks ProAdvisor) prepare for an expert session with Sarah Chen, Controller at Meridian Home Goods (S-Corp, $12.4M revenue, 85 employees, California).
 
 ${contextData ? `Data from Atlas agents (intent: ${intent}):\n${contextData}\n` : ''}
 
@@ -193,7 +193,7 @@ Rules:
   const requiresExpertReview = intent === 'POLICY_CHECK' || intent === 'TAX_ESTIMATE';
 
   logAgentAction({
-    agentName: 'Intuit Assistant',
+    agentName: 'Atlas Assistant',
     actionType: 'ADVISORY',
     clientId,
     inputSummary: `Chat message (intent: ${intent}): "${lastMessage.slice(0, 80)}"`,

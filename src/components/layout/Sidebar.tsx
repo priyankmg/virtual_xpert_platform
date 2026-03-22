@@ -233,7 +233,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         {/* Expert chip */}
         <div className="mx-4 mt-4 mb-2 px-3 py-2.5 rounded-xl" style={{ background: '#EFF6FF', border: '1px solid #BAE0F7' }}>
           <div className="flex items-center gap-2 mb-0.5">
-            <div className="w-6 h-6 rounded-full bg-[var(--intuit-blue)] text-white flex items-center justify-center text-xs font-semibold shrink-0">
+            <div className="w-6 h-6 rounded-full bg-[var(--brand-blue)] text-white flex items-center justify-center text-xs font-semibold shrink-0">
               MR
             </div>
             <div>
@@ -273,7 +273,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
         {/* Footer */}
         <div className="px-5 py-4 border-t border-slate-100">
-          <div className="text-xs font-medium" style={{ color: '#94A3B8' }}>Intuit Virtual Expert Platform</div>
+          <div className="text-xs font-medium" style={{ color: '#94A3B8' }}>Virtual Expert Platform</div>
           <div className="text-xs mt-0.5" style={{ color: '#CBD5E1' }}>Prototype v2.1 · 2025</div>
         </div>
       </aside>

@@ -47,12 +47,12 @@ export interface AgentHealth {
 // ── Source system health simulation ──────────────────────────────────────────
 
 const SOURCE_SYSTEMS = [
-  { name: 'QuickBooks Online', key: 'quickbooks', owner: 'intuit', baseLatency: 180 },
+  { name: 'QuickBooks Online', key: 'quickbooks', owner: 'platform', baseLatency: 180 },
   { name: 'ADP Payroll', key: 'adp', owner: 'third-party', baseLatency: 240 },
   { name: 'Expensify', key: 'expensify', owner: 'third-party', baseLatency: 210 },
   { name: 'Stripe', key: 'stripe', owner: 'third-party', baseLatency: 160 },
   { name: 'Inventory System (Legacy)', key: 'inventory', owner: 'third-party', baseLatency: 320 },
-  { name: 'Prior Year Tax Returns', key: 'tax-returns', owner: 'intuit', baseLatency: 140 },
+  { name: 'Prior Year Tax Returns', key: 'tax-returns', owner: 'platform', baseLatency: 140 },
 ];
 
 const AGENT_SYSTEMS = [
@@ -62,7 +62,7 @@ const AGENT_SYSTEMS = [
   { name: 'RAG Agent', key: 'rag', baseLatency: 720 },
   { name: 'Tax Classifier Agent', key: 'tax-classifier', baseLatency: 950 },
   { name: 'Governance Agent', key: 'governance', baseLatency: 380 },
-  { name: 'Intuit Assistant', key: 'assistant', baseLatency: 1400 },
+  { name: 'Atlas Assistant', key: 'assistant', baseLatency: 1400 },
 ];
 
 // Simulate realistic variance — most systems healthy, occasional degradation

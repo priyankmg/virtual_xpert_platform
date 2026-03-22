@@ -272,8 +272,8 @@ function CommunicationHistorySection({ clientId }: { clientId: string }) {
         className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[var(--intuit-blue-light)] flex items-center justify-center">
-            <BookOpen size={15} className="text-[var(--intuit-blue)]" />
+          <div className="w-8 h-8 rounded-lg bg-[var(--brand-blue-light)] flex items-center justify-center">
+            <BookOpen size={15} className="text-[var(--brand-blue)]" />
           </div>
           <div>
             <div className="font-semibold text-[var(--text-primary)]">Communication History — {history.clientName}</div>
@@ -321,7 +321,7 @@ function CommunicationHistorySection({ clientId }: { clientId: string }) {
           <div className="space-y-7">
             {history.communications.map((comm, idx) => (
               <div key={idx} className="relative pl-6 border-l-2 border-slate-200">
-                <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-[var(--intuit-blue)] border-2 border-white" />
+                <div className="absolute left-[-5px] top-0 w-2.5 h-2.5 rounded-full bg-[var(--brand-blue)] border-2 border-white" />
                 <div className="flex items-center gap-2 mb-2 flex-wrap">
                   <span className="text-xs font-semibold text-[var(--text-primary)]">{comm.date}</span>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">{comm.type}</span>
@@ -333,7 +333,7 @@ function CommunicationHistorySection({ clientId }: { clientId: string }) {
                     <ul className="space-y-1">
                       {comm.topicsDiscussed.map((t, i) => (
                         <li key={i} className="flex items-start gap-1.5 text-[var(--text-muted)]">
-                          <span className="text-[var(--intuit-blue)] shrink-0">·</span>{t}
+                          <span className="text-[var(--brand-blue)] shrink-0">·</span>{t}
                         </li>
                       ))}
                     </ul>

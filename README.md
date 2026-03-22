@@ -2,7 +2,7 @@
 
 **Product Specification · Cursor Build Guide · v2.0**
 
-> Inspired by Intuit's Virtual Expert Platform. Demonstrates agentic AI in service of a credentialed Intuit Expert navigating multi-client, multi-system complexity — analogous to Proteus for the enterprise HR domain.
+> Demonstrates agentic AI in service of a credentialed tax expert navigating multi-client, multi-system complexity — analogous to Proteus for the enterprise HR domain.
 
 | | |
 |---|---|
@@ -32,11 +32,11 @@
 
 ## 1. Product Vision and Problem Statement
 
-Atlas is a prototype of what Intuit's Virtual Expert Platform could look like when AI agents are embedded at every layer of the expert-customer interaction — from data aggregation through policy reasoning to final advisory output.
+Atlas is a prototype of what a Virtual Expert Platform can look like when AI agents are embedded at every layer of the expert-customer interaction — from data aggregation through policy reasoning to final advisory output.
 
 ### The Problem
 
-An Intuit Expert handling 8 client sessions per day faces a fragmentation problem that mirrors the "10-tool" challenge Intuit identified for small businesses. Before every session, the expert must manually gather client financial data from 5–6 disconnected systems — navigating QuickBooks, payroll platforms, expense tools, revenue systems, and prior tax returns — before they can offer a single recommendation.
+A credentialed expert handling 8 client sessions per day faces a fragmentation problem that mirrors the "10-tool" challenge many small businesses face. Before every session, the expert must manually gather client financial data from 5–6 disconnected systems — navigating QuickBooks, payroll platforms, expense tools, revenue systems, and prior tax returns — before they can offer a single recommendation.
 
 For **Marcus Rivera** preparing for a session with Meridian Home Goods client Sarah Chen:
 
@@ -59,15 +59,15 @@ Atlas demonstrates this vision through a Five Plane architecture: a Data Aggrega
 
 ## 2. User Personas
 
-### Primary Persona — Marcus Rivera, Intuit Expert
+### Primary Persona — Marcus Rivera, credentialed expert
 
-Marcus is the **platform user**. He is the credentialed professional Intuit employs to deliver QuickBooks Live and TurboTax Live services.
+Marcus is the **platform user**. He is the credentialed professional who delivers QuickBooks Live and TurboTax Live–style advisory services.
 
 | Attribute | Detail |
 |---|---|
 | Role | QuickBooks Live ProAdvisor |
 | Credentials | CPA, QuickBooks ProAdvisor Certified, TurboTax Live Business Certified |
-| Experience | 9 years in public accounting, 4 years at Intuit |
+| Experience | 9 years in public accounting, 4 years on the platform |
 | Specialty | SMB accounting, S-Corp tax, payroll compliance |
 | Daily load | 8 client sessions/day, 40–60 min each |
 | Client mix | Mid-market SMBs, 20–150 employees, e-commerce and services |
@@ -104,7 +104,7 @@ Sarah benefits from Atlas indirectly — sessions that used to consume 40 minute
 
 ### Phase 2 — Live Session (Marcus + Sarah, 60 minutes)
 
-1. Uses **Intuit Assistant panel** to answer ad-hoc client questions in real time (e.g. "Is her home office deductible given her lease structure?")
+1. Uses the **Atlas Assistant panel** to answer ad-hoc client questions in real time (e.g. "Is her home office deductible given her lease structure?")
 2. RAG Agent surfaces relevant IRS precedents inline when complex policy questions are triggered
 3. Tax Classifier updates the estimate in real time as Marcus and Sarah toggle deduction scenarios
 4. Governance panel flags any recommendation that reaches **ACTION risk level** — Marcus confirms before stating it to Sarah
@@ -135,7 +135,7 @@ All source systems are simulated with TypeScript mock data files. No real API in
 ## 5. Five Plane Architecture
 
 ### Plane 1 — Experience Plane
-The conversational interface. The Intuit Assistant handles natural language queries from both the expert and the client, built on Claude claude-opus-4-5 via the Anthropic SDK.
+The conversational interface. The Atlas Assistant handles natural language queries from both the expert and the client, built on Claude claude-opus-4-5 via the Anthropic SDK.
 
 - Natural language query interface on the Dashboard and in-session view
 - Intent classification routes queries to the appropriate downstream agent
@@ -176,7 +176,7 @@ GET  /api/das/snapshot?clientId — retrieve cached snapshot
 GET  /api/das/systems         — list source system connection status
 ```
 
-### 6.2 Intuit Assistant
+### 6.2 Atlas Assistant
 **Purpose:** Conversational AI interface. Classifies intent, routes to agents via the orchestrator, returns plain-language responses.
 
 **Intent categories:** `SNAPSHOT_QUERY` · `SUMMARY_REQUEST` · `POLICY_CHECK` · `PRECEDENT_LOOKUP` · `TAX_ESTIMATE` · `GENERAL`
@@ -242,14 +242,14 @@ GET  /api/governance/pending    — retrieve pending approvals
 
 ## 7. UI / Page Map
 
-All pages use Tailwind CSS. White/light background. Intuit color palette (`#0077C5` primary, `#FF6900` accent).
+All pages use Tailwind CSS. White/light background. Brand color palette (`#0077C5` primary, `#FF6900` accent).
 
 | Route | Page | Description |
 |---|---|---|
 | `/` | **Dashboard** | Expert work queue — Marcus's session list for today with status badges. Quick agent triggers. |
 | `/financial-snapshot` | **Financial Snapshot** | Tabbed view of all 6 source systems. Reconciliation flags and data gaps shown inline. |
 | `/session-brief` | **Session Brief** | Full pipeline output — executive summary, key metrics, policy findings, IRS precedents, tax estimate. Expert review panel. |
-| `/session-live/[clientId]` | **Live In-Session View** | Real-time AI assistance during active session. Intuit Assistant panel, live RAG lookups, toggleable tax estimate, governance ACTION flags. |
+| `/session-live/[clientId]` | **Live In-Session View** | Real-time AI assistance during active session. Atlas Assistant panel, live RAG lookups, toggleable tax estimate, governance ACTION flags. |
 | `/policy-review` | **Policy Review** | Full policy evaluation report. Findings by area with confidence scores. Deduction opportunities. Compliance deadlines. |
 | `/precedents` | **IRS Precedent Library** | Searchable precedent store. Find-similar-cases from any policy finding. Case detail modal. |
 | `/tax-estimate` | **Tax Estimate** | Three-scenario model with interactive assumption toggles. Prior year comparison chart. Quarterly payment schedule. Disclaimer banner. |
@@ -333,7 +333,7 @@ Repository root (clone of `virtual_xpert_platform` — the Next.js app lives her
       globals.css
     agents/
       das.ts
-      intuit-assistant.ts
+      expert-assistant.ts
       summarizer-agent.ts
       policy-evaluation-agent.ts
       rag-agent.ts
@@ -385,7 +385,7 @@ Repository root (clone of `virtual_xpert_platform` — the Next.js app lives her
   expertId: 'exp-marcus-001',
   name: 'Marcus Rivera',
   credentials: ['CPA', 'QuickBooks ProAdvisor Certified', 'TurboTax Live Business Certified'],
-  yearsWithIntuit: 4,
+  yearsWithPlatform: 4,
   specialty: 'SMB accounting, S-Corp tax, payroll compliance',
   csatTrailing30Days: 4.87,
   atlasAdoptionRate: 0.94,
@@ -456,7 +456,7 @@ ANTHROPIC_API_KEY=your_anthropic_api_key_here
 DATABASE_URL=your_neon_postgres_url_here   # optional for prototype
 ```
 
-> **Without an API key:** The app runs fully on mock data. Agent triggers work with deterministic outputs. The Intuit Assistant chat will show a connection error.
+> **Without an API key:** The app runs fully on mock data. Agent triggers work with deterministic outputs. The Atlas Assistant chat will show a connection error.
 
 ### Running Locally
 
@@ -470,7 +470,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Design Guidelines
 
-- **Color palette:** `#0077C5` (Intuit blue, primary) · `#FF6900` (Intuit orange, accent) · `#F1F5F9` (page background) · `#FFFFFF` (card background)
+- **Color palette:** `#0077C5` (brand blue, primary) · `#FF6900` (accent orange, accent) · `#F1F5F9` (page background) · `#FFFFFF` (card background)
 - **Typography:** Inter (Google Fonts) — clean, professional, financial-grade
 - **Agent panels:** Always show agent name badge, confidence score, timestamp, and "Requires Expert Review" badge when applicable
 - **Monetary values:** USD with commas (e.g. `$1,870,000`)

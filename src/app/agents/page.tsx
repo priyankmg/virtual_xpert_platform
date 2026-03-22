@@ -450,7 +450,7 @@ const SIM_STEPS: SimStep[] = [
     id: 's1', type: 'detect', durationMs: 900,
     icon: <RefreshCw size={13} />,
     label: 'Polling ADP Payroll API — GET /v2/employees',
-    detail: <span className="text-slate-500">Routine heartbeat check against <code className="bg-slate-100 px-1 rounded text-xs">adp.api.intuit.com/v2/employees</code></span>,
+    detail: <span className="text-slate-500">Routine heartbeat check against <code className="bg-slate-100 px-1 rounded text-xs">adp.api.example.com/v2/employees</code></span>,
   },
   {
     id: 's2', type: 'warn', durationMs: 1100,

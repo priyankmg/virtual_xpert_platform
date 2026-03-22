@@ -15,11 +15,11 @@ type Tab = 'overview' | 'accounting' | 'payroll' | 'expenses' | 'revenue' | 'inv
 
 function fmt(n: number) { return '$' + n.toLocaleString(); }
 
-// Intuit logo badge
-function IntuitBadge() {
+// Platform-owned data source badge
+function PlatformBadge() {
   return (
     <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#0077C5] text-white">
-      intuit
+      platform
     </span>
   );
 }
@@ -35,7 +35,7 @@ function ThirdPartyBadge({ name }: { name: string }) {
 const SOURCE_SYSTEMS = [
   {
     name: 'QuickBooks Online',
-    owner: 'intuit',
+    owner: 'platform',
     description: 'Chart of accounts, P&L, balance sheet, transactions',
     icon: '📊',
   },
@@ -65,7 +65,7 @@ const SOURCE_SYSTEMS = [
   },
   {
     name: 'Prior Year Tax Returns',
-    owner: 'intuit',
+    owner: 'platform',
     description: 'TurboTax Business — Form 1120-S, prior 3 years',
     icon: '📋',
   },
@@ -117,8 +117,8 @@ export default function FinancialSnapshot() {
         {/* Client Selector */}
         <div className="card p-4 flex items-center gap-4 flex-wrap justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[var(--intuit-blue-light)] flex items-center justify-center">
-              <Building2 size={16} className="text-[var(--intuit-blue)]" />
+            <div className="w-9 h-9 rounded-lg bg-[var(--brand-blue-light)] flex items-center justify-center">
+              <Building2 size={16} className="text-[var(--brand-blue)]" />
             </div>
             <div>
               <div className="text-xs text-[var(--text-muted)] font-medium">Viewing financial data for</div>
@@ -131,7 +131,7 @@ export default function FinancialSnapshot() {
           <div className="relative">
             <button
               onClick={() => setClientSelectorOpen(v => !v)}
-              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-white text-sm text-[var(--text-secondary)] hover:border-[var(--intuit-blue)] hover:text-[var(--intuit-blue)] transition-all"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-white text-sm text-[var(--text-secondary)] hover:border-[var(--brand-blue)] hover:text-[var(--brand-blue)] transition-all"
             >
               <Users size={13} />
               Switch Client
@@ -155,7 +155,7 @@ export default function FinancialSnapshot() {
                       <div className="text-sm font-medium text-[var(--text-primary)] truncate">{s.clientName}</div>
                       <div className="text-xs text-[var(--text-muted)]">{s.entityType} · {s.scheduledTime}</div>
                     </div>
-                    {selectedClient?.clientId === s.clientId && <Check size={13} className="text-[var(--intuit-blue)] shrink-0" />}
+                    {selectedClient?.clientId === s.clientId && <Check size={13} className="text-[var(--brand-blue)] shrink-0" />}
                   </button>
                 ))}
               </div>
@@ -178,7 +178,7 @@ export default function FinancialSnapshot() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                     <span className="text-sm font-medium text-[var(--text-primary)] truncate">{sys.name}</span>
-                    {sys.owner === 'intuit' ? <IntuitBadge /> : <ThirdPartyBadge name={sys.name} />}
+                    {sys.owner === 'platform' ? <PlatformBadge /> : <ThirdPartyBadge name={sys.name} />}
                   </div>
                   <p className="text-xs text-[var(--text-muted)] leading-relaxed">{sys.description}</p>
                 </div>

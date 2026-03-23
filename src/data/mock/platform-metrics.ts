@@ -1,12 +1,23 @@
 // Admin / product-team platform engagement metrics (mock data)
 
-export interface UserFunnelStage {
+export interface ExpertFunnelStage {
   label: string;
   sublabel: string;
   count: number;
   pctOfPrev: number | null; // null for first stage
   pctOfTotal: number;
   color: string;
+}
+
+/** Partition of total expert invitations — visual “what happened to 142” */
+export interface InvitationOutcomes {
+  totalInvited: number;
+  /** New activations from this invite wave */
+  newActivatedExperts: number;
+  /** Continued active experts (retained from prior cohorts) */
+  continuedExperts: number;
+  /** Attrition — never activated or churned */
+  attritionedExperts: number;
 }
 
 export interface FeatureUsageStat {
@@ -64,10 +75,31 @@ export interface FunnelSummaryStats {
 
 /** Conversion Metrics — spec block */
 export interface ConversionMetricsSpec {
-  sessionCompletionRate: number;       // 0–1
+  /** Total sessions scheduled in period */
+  sessionsScheduled: number;
+  /** Sessions where prep (AI pipeline) was invoked */
+  sessionsWithPrep: number;
+  /** Sessions held & completed successfully */
+  sessionsCompleted: number;
+  sessionCompletionRate: number;       // 0–1 (derived or headline)
   firstSessionResolutionRate: number;   // 0–1
-  briefToSessionConversion: number;     // 0–1
   expertReadinessScore: number;         // 0–100
+  /** Shown in tooltip next to Expert Readiness Score */
+  expertReadinessScoreExplanation: string;
+}
+
+/** Session prep (AI brief pipeline) usage */
+export interface SessionPrepMetricsSpec {
+  /** Sessions where prep was invoked at least once */
+  sessionsWithPrepInvoked: number;
+  /** Average wall-clock prep time (minutes) */
+  avgPrepTimeMinutes: number;
+  /** Prep runs that were followed by a completed live session */
+  prepsLeadingToCompletedSessions: number;
+  /** Experts in first 90 days who invoked prep */
+  newExpertsInvokedPrep: number;
+  /** Tenured experts who invoked prep */
+  existingExpertsUsedPrep: number;
 }
 
 /** Atlas vs control cohort — spec */
@@ -122,9 +154,15 @@ export interface PlatformMetrics {
   featureAdoptionDepth: FeatureAdoptionDepthRow[];
   featureAdoptionRetentionInsight: string;
 
-  // User adoption funnel
+  /** Outcomes of N expert invitations (142) */
+  invitationOutcomes: InvitationOutcomes;
+
+  // Expert adoption funnel
   totalInvited: number;
-  funnel: UserFunnelStage[];
+  funnel: ExpertFunnelStage[];
+
+  /** Session prep analytics */
+  sessionPrepMetrics: SessionPrepMetricsSpec;
 
   // Feature usage
   topFeatures: FeatureUsageStat[];
@@ -156,12 +194,31 @@ export const platformMetrics: PlatformMetrics = {
     avgSessionPrepMinutes: 12,
   },
 
+  invitationOutcomes: {
+    totalInvited: 142,
+    newActivatedExperts: 18,
+    continuedExperts: 24,
+    attritionedExperts: 100,
+  },
+
   // Spec: Conversion Metrics cards
   conversion: {
+    sessionsScheduled: 620,
+    sessionsWithPrep: 498,
+    sessionsCompleted: 514,
     sessionCompletionRate: 0.94,
     firstSessionResolutionRate: 0.78,
-    briefToSessionConversion: 0.82,
     expertReadinessScore: 87,
+    expertReadinessScoreExplanation:
+      'Tracks expert preparedness before each client session. An expert is marked Ready if they: (1) generated a session brief, (2) scrolled through at least 70% of it, and (3) cleared all pending HIGH-risk governance approvals — all before session start time. Sessions where these steps are incomplete are marked Not Ready. Target: 80%.',
+  },
+
+  sessionPrepMetrics: {
+    sessionsWithPrepInvoked: 498,
+    avgPrepTimeMinutes: 12,
+    prepsLeadingToCompletedSessions: 412,
+    newExpertsInvokedPrep: 28,
+    existingExpertsUsedPrep: 52,
   },
 
   // Spec: With Atlas vs Without Atlas cohort comparison
@@ -202,7 +259,7 @@ export const platformMetrics: PlatformMetrics = {
   funnel: [
     {
       label: 'Invited / Signed Up',
-      sublabel: 'Accounts provisioned',
+      sublabel: 'Expert accounts provisioned',
       count: 142,
       pctOfPrev: null,
       pctOfTotal: 100,
@@ -210,7 +267,7 @@ export const platformMetrics: PlatformMetrics = {
     },
     {
       label: 'Activated',
-      sublabel: 'Logged in at least once',
+      sublabel: 'Experts logged in at least once',
       count: 118,
       pctOfPrev: 83,
       pctOfTotal: 83,
@@ -226,7 +283,7 @@ export const platformMetrics: PlatformMetrics = {
     },
     {
       label: 'Active This Month',
-      sublabel: 'Used Atlas in last 30 days',
+      sublabel: 'Experts used Atlas in last 30 days',
       count: 76,
       pctOfPrev: 81,
       pctOfTotal: 54,

@@ -498,8 +498,10 @@ Aggregated engagement and agent data for demos lives in **`src/data/mock/platfor
 
 | Area | Contents |
 |---|---|
-| Funnel summary | Six top cards: invited, active, activation %, session completion %, first-session resolution %, avg session prep time (minutes). |
-| Conversion | Session completion, first-session resolution, brief-to-session conversion, expert readiness score (0–100). |
+| Expert adoption funnel | Same staged funnel with expert-oriented labels; invitation outcomes bar for **142** invites → **new / continued / attrition** (e.g. 18 · 24 · 100). |
+| Funnel summary | Six top cards: **total experts invited**, active, activation %, session completion %, first-session resolution %, avg session prep time (minutes). |
+| Conversion | Narrative: scheduled vs prep vs completed sessions; **session completion rate**; **first session resolution rate**; **expert readiness score** (0–100, tooltip explains Ready vs Not Ready, target 80%). |
+| Session prep | Prep invoked count, average prep time, preps leading to completed sessions, new vs existing experts using prep. |
 | Cohort table | “With Atlas” vs “Without Atlas” rows (CSAT, prep time, throughput, retention, governance, rework). |
 | Agent table | Per-agent calls, per-session average, **p50 / p95 latency (ms)**, confidence, success rate, trend. |
 | Signals | RAG declining-confidence alert card; policy override gauges by risk; monthly confidence vs override trend (Recharts). |

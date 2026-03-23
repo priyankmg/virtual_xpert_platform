@@ -7,7 +7,7 @@ import {
   Users, TrendingUp, TrendingDown, BarChart3, Bot, ShieldCheck,
   AlertTriangle, ChevronDown, ChevronUp, CheckCircle2, XCircle,
   Star, Activity, Minus, ArrowUp, ArrowDown, Timer, Target,
-  Percent, Sparkles, Layers,
+  Percent, Sparkles, Layers, HelpCircle, ClipboardList,
 } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -24,6 +24,28 @@ function TrendIcon({ trend, trendPct }: { trend: 'up' | 'down' | 'stable'; trend
   if (trend === 'up')    return <span className="flex items-center gap-0.5 text-green-600 text-xs font-medium"><ArrowUp size={11} />+{trendPct}%</span>;
   if (trend === 'down')  return <span className="flex items-center gap-0.5 text-red-500 text-xs font-medium"><ArrowDown size={11} />{trendPct}%</span>;
   return <span className="flex items-center gap-0.5 text-slate-400 text-xs"><Minus size={11} />—</span>;
+}
+
+function HelpTip({ text }: { text: string }) {
+  return (
+    <span className="group relative inline-flex align-middle ml-1">
+      <button
+        type="button"
+        className="rounded-full p-0.5 text-[var(--text-muted)] hover:text-[var(--brand-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-blue)]"
+        aria-label="More information"
+      >
+        <HelpCircle size={14} />
+      </button>
+      <span
+        role="tooltip"
+        className="pointer-events-none invisible group-hover:visible group-focus-within:visible opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity absolute z-50 left-1/2 -translate-x-1/2 bottom-full mb-2 w-72 max-w-[85vw] p-3 rounded-xl text-xs text-left font-normal leading-relaxed text-white shadow-xl"
+        style={{ background: '#1E293B', border: '1px solid #334155' }}
+      >
+        {text}
+        <span className="absolute left-1/2 -translate-x-1/2 top-full border-8 border-transparent" style={{ borderTopColor: '#1E293B' }} />
+      </span>
+    </span>
+  );
 }
 
 function RiskBadge({ risk }: { risk: 'HIGH' | 'MEDIUM' | 'LOW' }) {
@@ -173,12 +195,17 @@ export default function AdminMetricsPage() {
           </div>
         </div>
 
-        {/* ── Section 1: User Adoption Funnel ── */}
+        {/* ── Section 1: Expert Adoption Funnel ── */}
         <div>
-          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-5 flex items-center gap-2">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
             <Users size={16} className="text-[var(--brand-blue)]" />
-            User Adoption Funnel
+            Expert Adoption Funnel
           </h2>
+          <p className="text-xs text-[var(--text-muted)] mb-5 max-w-3xl">
+            Tracks how invited experts move through activation and ongoing usage. At-risk and churned counts include{' '}
+            <strong className="text-[var(--text-secondary)]">{p.funnel[5].count}</strong> at-risk and{' '}
+            <strong className="text-[var(--text-secondary)]">{p.funnel[6].count}</strong> churned experts in this period.
+          </p>
 
           {/* Positive funnel steps */}
           <div className="space-y-2 mb-4">
@@ -225,7 +252,7 @@ export default function AdminMetricsPage() {
                   <AlertTriangle size={16} style={{ color: stage.color }} />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[var(--text-primary)]">{stage.count} users</div>
+                  <div className="text-sm font-semibold text-[var(--text-primary)]">{stage.count} experts</div>
                   <div className="text-xs font-medium" style={{ color: stage.color }}>{stage.label}</div>
                   <div className="text-xs text-[var(--text-muted)]">{stage.sublabel} · {stage.pctOfTotal}% of base</div>
                 </div>
@@ -233,11 +260,82 @@ export default function AdminMetricsPage() {
             ))}
           </div>
 
+          {/* What happened to the 142 invitations */}
+          <div className="card p-5 mt-4">
+            <h3 className="text-sm font-semibold text-[var(--text-primary)] mb-1">
+              Invitation outcomes — {p.invitationOutcomes.totalInvited} total experts invited
+            </h3>
+            <p className="text-xs text-[var(--text-muted)] mb-4">
+              Of <strong className="text-[var(--text-secondary)]">{p.invitationOutcomes.totalInvited}</strong> invitations sent, here is how experts landed: new activations, continued engagement, or attrition.
+            </p>
+            <div className="flex h-14 rounded-lg overflow-hidden border border-[var(--border-color)] mb-4">
+              {(() => {
+                const n = p.invitationOutcomes.newActivatedExperts;
+                const c = p.invitationOutcomes.continuedExperts;
+                const a = p.invitationOutcomes.attritionedExperts;
+                return (
+                  <>
+                    <div
+                      className="flex flex-col items-center justify-center text-white text-xs font-semibold px-1 min-w-0"
+                      style={{ flex: n, background: '#00875A' }}
+                      title={`${n} new activated`}
+                    >
+                      <span className="hidden sm:inline truncate w-full text-center">New</span>
+                      <span>{n}</span>
+                    </div>
+                    <div
+                      className="flex flex-col items-center justify-center text-white text-xs font-semibold px-1 min-w-0"
+                      style={{ flex: c, background: '#0077C5' }}
+                      title={`${c} continued`}
+                    >
+                      <span className="hidden sm:inline truncate w-full text-center">Continued</span>
+                      <span>{c}</span>
+                    </div>
+                    <div
+                      className="flex flex-col items-center justify-center text-white text-xs font-semibold px-1 min-w-0"
+                      style={{ flex: a, background: '#94A3B8' }}
+                      title={`${a} attritioned`}
+                    >
+                      <span className="hidden sm:inline truncate w-full text-center">Attrition</span>
+                      <span>{a}</span>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                <span className="w-3 h-3 rounded-full mt-1 shrink-0 bg-[#00875A]" />
+                <div>
+                  <div className="font-semibold text-emerald-900">{p.invitationOutcomes.newActivatedExperts} experts activated as new</div>
+                  <div className="text-xs text-emerald-800/90">First-time onboarding completed from this invite cohort.</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-[var(--brand-blue-light)] border border-blue-200">
+                <span className="w-3 h-3 rounded-full mt-1 shrink-0 bg-[var(--brand-blue)]" />
+                <div>
+                  <div className="font-semibold text-slate-900">{p.invitationOutcomes.continuedExperts} continued</div>
+                  <div className="text-xs text-[var(--text-secondary)]">Experts who stayed active from prior waves and remained engaged.</div>
+                </div>
+              </div>
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <span className="w-3 h-3 rounded-full mt-1 shrink-0 bg-slate-400" />
+                <div>
+                  <div className="font-semibold text-slate-900">{p.invitationOutcomes.attritionedExperts} attritioned</div>
+                  <div className="text-xs text-[var(--text-muted)]">Did not activate or stopped using the platform (churn / inactive).</div>
+                </div>
+              </div>
+            </div>
+            <p className="text-[11px] text-[var(--text-muted)] mt-3">
+              {p.invitationOutcomes.newActivatedExperts} + {p.invitationOutcomes.continuedExperts} + {p.invitationOutcomes.attritionedExperts} = {p.invitationOutcomes.totalInvited} (full partition of invitations).
+            </p>
+          </div>
+
           {/* Summary strip — 6 cards (spec) */}
           <div className="card p-4 mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-[var(--brand-blue)]">{p.totalInvited}</div>
-              <div className="text-xs text-[var(--text-muted)] mt-0.5">Total Invited</div>
+              <div className="text-xs text-[var(--text-muted)] mt-0.5">Total experts invited</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-green-600">{p.funnel[3].count}</div>
@@ -334,32 +432,92 @@ export default function AdminMetricsPage() {
           </div>
         </div>
 
-        {/* ── Conversion Metrics (spec) ── */}
+        {/* ── Conversion Metrics ── */}
         <div>
-          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
             <Percent size={16} className="text-[var(--brand-blue)]" />
             Conversion Metrics
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+
+          <div className="card p-5 mb-4 border-l-4" style={{ borderLeftColor: '#0077C5' }}>
+            <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
+              <strong className="text-[var(--text-primary)]">{p.conversion.sessionsScheduled.toLocaleString()} sessions</strong> were scheduled in this period.
+              Of those, <strong className="text-[var(--brand-blue)]">{p.conversion.sessionsWithPrep.toLocaleString()}</strong> had a{' '}
+              <strong>session prep</strong> (AI pipeline / brief generation) invoked, and{' '}
+              <strong className="text-[#00875A]">{p.conversion.sessionsCompleted.toLocaleString()}</strong> were successfully{' '}
+              <strong>held and completed</strong>.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-4 text-xs text-[var(--text-muted)]">
+              <span>
+                Prep coverage:{' '}
+                <strong className="text-[var(--text-primary)]">{pct(p.conversion.sessionsWithPrep, p.conversion.sessionsScheduled)}%</strong> of scheduled sessions
+              </span>
+              <span>
+                Completion:{' '}
+                <strong className="text-[var(--text-primary)]">{pct(p.conversion.sessionsCompleted, p.conversion.sessionsScheduled)}%</strong> of scheduled sessions
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="card p-5 text-center border-t-4" style={{ borderTopColor: '#0077C5' }}>
-              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Session Completion Rate</div>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Session completion rate</div>
               <div className="text-3xl font-bold text-[var(--brand-blue)]">{Math.round(p.conversion.sessionCompletionRate * 100)}%</div>
-              <div className="text-[11px] text-[var(--text-muted)] mt-1">Scheduled → held &amp; closed</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Share of scheduled sessions that completed</div>
             </div>
             <div className="card p-5 text-center border-t-4" style={{ borderTopColor: '#00875A' }}>
-              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">First Session Resolution Rate</div>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">First session resolution rate</div>
               <div className="text-3xl font-bold text-[#00875A]">{Math.round(p.conversion.firstSessionResolutionRate * 100)}%</div>
-              <div className="text-[11px] text-[var(--text-muted)] mt-1">No follow-up within 7 days</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">No follow-up ticket within 7 days</div>
             </div>
-            <div className="card p-5 text-center border-t-4" style={{ borderTopColor: '#00B8D9' }}>
-              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Brief-to-Session Conversion</div>
-              <div className="text-3xl font-bold" style={{ color: '#00B8D9' }}>{Math.round(p.conversion.briefToSessionConversion * 100)}%</div>
-              <div className="text-[11px] text-[var(--text-muted)] mt-1">Brief generated → live session</div>
-            </div>
-            <div className="card p-5 text-center border-t-4" style={{ borderTopColor: '#FF6900' }}>
-              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Expert Readiness Score</div>
+            <div className="card p-5 text-center border-t-4 relative" style={{ borderTopColor: '#FF6900' }}>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1 flex items-center justify-center gap-0.5">
+                Expert readiness score
+                <HelpTip text={p.conversion.expertReadinessScoreExplanation} />
+              </div>
               <div className="text-3xl font-bold text-[var(--text-primary)]">{p.conversion.expertReadinessScore}</div>
-              <div className="text-[11px] text-[var(--text-muted)] mt-1">Composite 0–100 (prep + policy)</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">0–100 · Target 80%</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Session prep metrics ── */}
+        <div>
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
+            <ClipboardList size={16} className="text-[var(--brand-blue)]" />
+            Session prep (AI brief pipeline)
+          </h2>
+          <p className="text-xs text-[var(--text-muted)] mb-4 max-w-3xl">
+            Usage of the pre-session data aggregation and brief generation flow — who ran prep, how long it took, and whether it led to a completed session.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="card p-5">
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Sessions with prep invoked</div>
+              <div className="text-2xl font-bold text-[var(--brand-blue)]">{p.sessionPrepMetrics.sessionsWithPrepInvoked.toLocaleString()}</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Prep pipeline run at least once</div>
+            </div>
+            <div className="card p-5">
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Average prep time</div>
+              <div className="text-2xl font-bold text-[var(--text-primary)] flex items-baseline gap-1">
+                {p.sessionPrepMetrics.avgPrepTimeMinutes}
+                <span className="text-sm font-semibold text-[var(--text-muted)]">min</span>
+              </div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Wall-clock, pipeline + review</div>
+            </div>
+            <div className="card p-5">
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Preps → completed sessions</div>
+              <div className="text-2xl font-bold text-[#00875A]">{p.sessionPrepMetrics.prepsLeadingToCompletedSessions.toLocaleString()}</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Prep followed by a held &amp; completed session</div>
+            </div>
+            <div className="card p-5 sm:col-span-2 lg:col-span-1">
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">New experts (≤90 days) who ran prep</div>
+              <div className="text-2xl font-bold text-[var(--text-primary)]">{p.sessionPrepMetrics.newExpertsInvokedPrep}</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">First-time cohort using session prep</div>
+            </div>
+            <div className="card p-5 sm:col-span-2">
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Existing experts who ran prep</div>
+              <div className="text-2xl font-bold text-[var(--text-primary)]">{p.sessionPrepMetrics.existingExpertsUsedPrep}</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Tenured experts invoking prep this period</div>
             </div>
           </div>
         </div>

@@ -498,7 +498,7 @@ Aggregated engagement and agent data for demos lives in **`src/data/mock/platfor
 
 | Area | Contents |
 |---|---|
-| Expert adoption funnel | Same staged funnel with expert-oriented labels; invitation outcomes bar for **142** invites → **new / continued / attrition** (e.g. 18 · 24 · 100). |
+| Expert adoption funnel | Staged funnel with expert-oriented labels; at-risk / churned warning cards. |
 | Funnel summary | Six top cards: **total experts invited**, active, activation %, session completion %, first-session resolution %, avg session prep time (minutes). |
 | Conversion | Narrative: scheduled vs prep vs completed sessions; **session completion rate**; **first session resolution rate**; **expert readiness score** (0–100, tooltip explains Ready vs Not Ready, target 80%). |
 | Session prep | Prep invoked count, average prep time, preps leading to completed sessions, new vs existing experts using prep. |

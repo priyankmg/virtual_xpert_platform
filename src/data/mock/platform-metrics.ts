@@ -9,17 +9,6 @@ export interface ExpertFunnelStage {
   color: string;
 }
 
-/** Partition of total expert invitations — visual “what happened to 142” */
-export interface InvitationOutcomes {
-  totalInvited: number;
-  /** New activations from this invite wave */
-  newActivatedExperts: number;
-  /** Continued active experts (retained from prior cohorts) */
-  continuedExperts: number;
-  /** Attrition — never activated or churned */
-  attritionedExperts: number;
-}
-
 export interface FeatureUsageStat {
   name: string;
   route: string;
@@ -154,9 +143,6 @@ export interface PlatformMetrics {
   featureAdoptionDepth: FeatureAdoptionDepthRow[];
   featureAdoptionRetentionInsight: string;
 
-  /** Outcomes of N expert invitations (142) */
-  invitationOutcomes: InvitationOutcomes;
-
   // Expert adoption funnel
   totalInvited: number;
   funnel: ExpertFunnelStage[];
@@ -192,13 +178,6 @@ export const platformMetrics: PlatformMetrics = {
     sessionCompletionRate: 0.94,
     firstSessionResolutionRate: 0.78,
     avgSessionPrepMinutes: 12,
-  },
-
-  invitationOutcomes: {
-    totalInvited: 142,
-    newActivatedExperts: 18,
-    continuedExperts: 24,
-    attritionedExperts: 100,
   },
 
   // Spec: Conversion Metrics cards

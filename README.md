@@ -325,7 +325,8 @@ Repository root (clone of `virtual_xpert_platform` — the Next.js app lives her
           log/route.ts
           pending/route.ts
       (pages)/
-        page.tsx                    ← Dashboard (Expert Work Queue)
+        page.tsx                    ← Server entry: `dynamic` for fresh `/` after deploys
+        home-dashboard.tsx          ← Dashboard UI (client — Expert Work Queue)
         admin/page.tsx              ← alias → same as admin-metrics
         admin-metrics/page.tsx      ← Product team metrics
         my-metrics/page.tsx

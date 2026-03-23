@@ -9,7 +9,7 @@
 | **Primary Persona** | Marcus Rivera — QuickBooks Live ProAdvisor, CPA |
 | **Core Use Case** | Expert pre-session prep, live in-session AI assistance, and post-session quality review |
 | **Featured Client** | Sarah Chen, Controller — Meridian Home Goods (S-Corp, 85 employees, $12M revenue) |
-| **Stack** | Next.js 15, TypeScript, Tailwind CSS, Anthropic Claude (claude-opus-4-5), Neon Postgres |
+| **Stack** | Next.js 16, TypeScript, Tailwind CSS, Anthropic Claude (claude-opus-4-5), Neon Postgres, Recharts |
 | **Deployment** | Vercel (project **Root Directory** = repository root — do not use a nested `atlas/` folder) |
 
 ---
@@ -27,6 +27,7 @@
 9. [Directory Structure](#9-directory-structure)
 10. [Mock Data Schemas](#10-mock-data-schemas)
 11. [Getting Started](#11-getting-started)
+12. [Product and Admin Metrics (Mock)](#12-product-and-admin-metrics-mock)
 
 ---
 
@@ -246,7 +247,8 @@ All pages use Tailwind CSS. White/light background. Brand color palette (`#0077C
 
 | Route | Page | Description |
 |---|---|---|
-| `/` | **Dashboard** | Expert work queue — Marcus's session list for today with status badges. Quick agent triggers. |
+| `/` | **Dashboard** | Expert work queue with **collapsible** “Upcoming” (calendar-style by time) and “Completed” session sections. Active session banner shows a **3-step workflow**: Client analysis → Review & actions → Live session (all linked). Client selector in header. |
+| `/session-prep/[clientId]` | **Session Prep** | Pre-session flow and AI brief generation for a client. |
 | `/financial-snapshot` | **Financial Snapshot** | Tabbed view of all 6 source systems. Reconciliation flags and data gaps shown inline. |
 | `/session-brief` | **Session Brief** | Full pipeline output — executive summary, key metrics, policy findings, IRS precedents, tax estimate. Expert review panel. |
 | `/session-live/[clientId]` | **Live In-Session View** | Real-time AI assistance during active session. Atlas Assistant panel, live RAG lookups, toggleable tax estimate, governance ACTION flags. |
@@ -255,6 +257,10 @@ All pages use Tailwind CSS. White/light background. Brand color palette (`#0077C
 | `/tax-estimate` | **Tax Estimate** | Three-scenario model with interactive assumption toggles. Prior year comparison chart. Quarterly payment schedule. Disclaimer banner. |
 | `/governance` | **Governance Log** | Full audit log with filter by agent/risk level. Pending approvals panel. Approve/Reject buttons. Auto-refreshes every 10s. |
 | `/agents` | **Agent Control Panel** | Per-agent run buttons with live output previews. Dependency flow diagram. Use-case labels for each agent. |
+| `/my-metrics` | **My Metrics** | Expert-facing performance summary (mock), adoption, and prep-time stats. |
+| `/admin-metrics` or `/admin` | **Admin Engagement Metrics** | Product-team dashboard (mock): adoption funnel, **6-card** summary strip (incl. session completion, first-session resolution, avg prep time), feature usage, **conversion metrics**, **Atlas vs control cohort** table, agent effectiveness with **p50/p95 latency**, **RAG confidence alert**, expert performance distribution, feature adoption depth charts, policy overrides, monthly confidence trend. Same UI at both URLs. |
+
+**Sidebar — Client Analysis:** **Session Brief** is listed first; **Financial Snapshot**, **Policy Review**, **IRS Precedents**, and **Tax Estimate** appear as nested items under it.
 
 ---
 
@@ -320,8 +326,12 @@ Repository root (clone of `virtual_xpert_platform` — the Next.js app lives her
           pending/route.ts
       (pages)/
         page.tsx                    ← Dashboard (Expert Work Queue)
+        admin/page.tsx              ← alias → same as admin-metrics
+        admin-metrics/page.tsx      ← Product team metrics
+        my-metrics/page.tsx
         financial-snapshot/page.tsx
         session-brief/page.tsx
+        session-prep/[clientId]/page.tsx
         session-live/
           [clientId]/page.tsx       ← Live In-Session View
         policy-review/page.tsx
@@ -353,6 +363,7 @@ Repository root (clone of `virtual_xpert_platform` — the Next.js app lives her
         irs-precedents.ts
         irs-policy-docs.ts
         expert-sessions.ts          ← Marcus Rivera profile + session queue
+        platform-metrics.ts         ← Admin dashboard mock (funnel, agents, conversion, cohorts, charts)
       types/
         snapshot.ts
         agents.ts
@@ -477,3 +488,20 @@ Open [http://localhost:3000](http://localhost:3000).
 - **Percentages:** 1 decimal place (e.g. `21.3%`)
 - **Governance:** Tax estimates must always show the disclaimer banner — never suppress it
 - **Responsive:** Single-column on mobile, sidebar drawer on tablet, full layout on desktop (lg+)
+
+---
+
+## 12. Product and Admin Metrics (Mock)
+
+Aggregated engagement and agent data for demos lives in **`src/data/mock/platform-metrics.ts`** and powers **`/admin-metrics`** and **`/admin`**.
+
+| Area | Contents |
+|---|---|
+| Funnel summary | Six top cards: invited, active, activation %, session completion %, first-session resolution %, avg session prep time (minutes). |
+| Conversion | Session completion, first-session resolution, brief-to-session conversion, expert readiness score (0–100). |
+| Cohort table | “With Atlas” vs “Without Atlas” rows (CSAT, prep time, throughput, retention, governance, rework). |
+| Agent table | Per-agent calls, per-session average, **p50 / p95 latency (ms)**, confidence, success rate, trend. |
+| Signals | RAG declining-confidence alert card; policy override gauges by risk; monthly confidence vs override trend (Recharts). |
+| Charts | Expert performance (3-bucket bar); feature adoption depth (stacked shallow vs deep) + retention insight callout. |
+
+All values are **prototype mock data** — replace in `platformMetrics` to match your product spec.

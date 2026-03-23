@@ -28,6 +28,9 @@ export interface AgentUsageStat {
   avgConfidenceScore: number; // 0–1
   successRate: number;        // 0–1
   trend: 'up' | 'down' | 'stable';
+  /** Round-trip latency ms — spec */
+  p50LatencyMs: number;
+  p95LatencyMs: number;
 }
 
 export interface PolicyOverrideDetail {
@@ -52,9 +55,72 @@ export interface MonthlyConfidence {
   totalActions: number;
 }
 
+/** Admin dashboard — top summary strip (6 cards) */
+export interface FunnelSummaryStats {
+  sessionCompletionRate: number;       // 0–1
+  firstSessionResolutionRate: number;    // 0–1
+  avgSessionPrepMinutes: number;
+}
+
+/** Conversion Metrics — spec block */
+export interface ConversionMetricsSpec {
+  sessionCompletionRate: number;       // 0–1
+  firstSessionResolutionRate: number;   // 0–1
+  briefToSessionConversion: number;     // 0–1
+  expertReadinessScore: number;         // 0–100
+}
+
+/** Atlas vs control cohort — spec */
+export interface AtlasCohortRow {
+  metric: string;
+  withAtlas: string;
+  withoutAtlas: string;
+  notes?: string;
+}
+
+export interface RagConfidenceAlertSpec {
+  headline: string;
+  detail: string;
+  confidenceDeltaPp: number; // negative = decline
+  periodCompare: string;
+}
+
+export interface ExpertPerfBucket {
+  label: string;
+  shortLabel: string;
+  count: number;
+  pct: number; // 0–100
+  color: string;
+}
+
+export interface FeatureAdoptionDepthRow {
+  feature: string;
+  shallowPct: number; // 0–100 — opened only / light use
+  deepPct: number;    // 0–100 — multi-view or return visits
+}
+
 export interface PlatformMetrics {
   asOf: string;
   periodLabel: string;
+
+  /** Funnel summary strip — 6-card row */
+  funnelSummary: FunnelSummaryStats;
+
+  /** Conversion Metrics section */
+  conversion: ConversionMetricsSpec;
+
+  /** Atlas impact cohort table */
+  atlasImpactCohort: AtlasCohortRow[];
+
+  /** RAG declining confidence — alert below agent table */
+  ragConfidenceAlert: RagConfidenceAlertSpec;
+
+  /** Expert performance — 3 buckets */
+  expertPerformanceDistribution: ExpertPerfBucket[];
+
+  /** Feature adoption depth chart + insight */
+  featureAdoptionDepth: FeatureAdoptionDepthRow[];
+  featureAdoptionRetentionInsight: string;
 
   // User adoption funnel
   totalInvited: number;
@@ -82,6 +148,55 @@ export interface PlatformMetrics {
 export const platformMetrics: PlatformMetrics = {
   asOf: '2025-03-18',
   periodLabel: 'Last 30 Days',
+
+  // Spec: funnel summary strip (6-card row supplements)
+  funnelSummary: {
+    sessionCompletionRate: 0.94,
+    firstSessionResolutionRate: 0.78,
+    avgSessionPrepMinutes: 12,
+  },
+
+  // Spec: Conversion Metrics cards
+  conversion: {
+    sessionCompletionRate: 0.94,
+    firstSessionResolutionRate: 0.78,
+    briefToSessionConversion: 0.82,
+    expertReadinessScore: 87,
+  },
+
+  // Spec: With Atlas vs Without Atlas cohort comparison
+  atlasImpactCohort: [
+    { metric: 'Avg CSAT (trailing 30d)', withAtlas: '4.87', withoutAtlas: '4.31', notes: '5-point scale' },
+    { metric: 'Avg session prep time', withAtlas: '12 min', withoutAtlas: '47 min', notes: 'Pre-Atlas manual baseline' },
+    { metric: 'Sessions completed / week', withAtlas: '8.2', withoutAtlas: '6.1', notes: 'Per expert FTE' },
+    { metric: '30-day feature return rate', withAtlas: '89%', withoutAtlas: '62%', notes: 'Any Atlas feature' },
+    { metric: 'Governance ACTION approval rate', withAtlas: '91%', withoutAtlas: '84%', notes: 'Expert confirmations' },
+    { metric: 'Estimated rework rate', withAtlas: '6%', withoutAtlas: '19%', notes: 'Post-session follow-ups' },
+  ],
+
+  ragConfidenceAlert: {
+    headline: 'RAG Agent — confidence declining',
+    detail:
+      'Average relevance confidence for RAG (Precedent Retrieval) fell 8pp vs prior period (79% → 71% trailing 4 weeks). Correlates with increased policy-edge queries and smaller precedent windows. Recommend re-embedding IRS library subset and reviewing retrieval thresholds.',
+    confidenceDeltaPp: -8,
+    periodCompare: 'Trailing 4 weeks vs prior 4 weeks',
+  },
+
+  expertPerformanceDistribution: [
+    { label: 'Top performers', shortLabel: 'Top', count: 14, pct: 18, color: '#00875A' },
+    { label: 'Core contributors', shortLabel: 'Core', count: 49, pct: 64, color: '#0077C5' },
+    { label: 'Needs coaching', shortLabel: 'Coach', count: 13, pct: 18, color: '#FF8B00' },
+  ],
+
+  featureAdoptionDepth: [
+    { feature: 'Session Prep (AI Brief)', shallowPct: 22, deepPct: 78 },
+    { feature: 'Financial Snapshot', shallowPct: 35, deepPct: 65 },
+    { feature: 'Atlas Assistant (Chat)', shallowPct: 41, deepPct: 59 },
+    { feature: 'Policy Review', shallowPct: 28, deepPct: 72 },
+    { feature: 'IRS Precedents', shallowPct: 58, deepPct: 42 },
+  ],
+  featureAdoptionRetentionInsight:
+    'Experts who open ≥3 distinct Atlas features in week 1 show 2.3× higher 90-day retention vs single-feature users. Drive depth on Financial Snapshot + Policy Review within first 5 sessions.',
 
   totalInvited: 142,
   funnel: [
@@ -169,6 +284,8 @@ export const platformMetrics: PlatformMetrics = {
       avgConfidenceScore: 0.91,
       successRate: 0.98,
       trend: 'stable',
+      p50LatencyMs: 420,
+      p95LatencyMs: 1180,
     },
     {
       name: 'Summarizer Agent',
@@ -179,6 +296,8 @@ export const platformMetrics: PlatformMetrics = {
       avgConfidenceScore: 0.88,
       successRate: 0.97,
       trend: 'up',
+      p50LatencyMs: 890,
+      p95LatencyMs: 2340,
     },
     {
       name: 'Atlas Assistant',
@@ -189,6 +308,8 @@ export const platformMetrics: PlatformMetrics = {
       avgConfidenceScore: 0.85,
       successRate: 0.94,
       trend: 'up',
+      p50LatencyMs: 1320,
+      p95LatencyMs: 4100,
     },
     {
       name: 'Policy Evaluation Agent',
@@ -199,6 +320,8 @@ export const platformMetrics: PlatformMetrics = {
       avgConfidenceScore: 0.83,
       successRate: 0.91,
       trend: 'stable',
+      p50LatencyMs: 760,
+      p95LatencyMs: 1980,
     },
     {
       name: 'Tax Classifier Agent',
@@ -209,6 +332,8 @@ export const platformMetrics: PlatformMetrics = {
       avgConfidenceScore: 0.87,
       successRate: 0.95,
       trend: 'up',
+      p50LatencyMs: 640,
+      p95LatencyMs: 1650,
     },
     {
       name: 'RAG (Precedent Retrieval)',
@@ -219,6 +344,8 @@ export const platformMetrics: PlatformMetrics = {
       avgConfidenceScore: 0.79,
       successRate: 0.93,
       trend: 'down',
+      p50LatencyMs: 580,
+      p95LatencyMs: 1520,
     },
     {
       name: 'Governance Agent',
@@ -229,6 +356,8 @@ export const platformMetrics: PlatformMetrics = {
       avgConfidenceScore: 0.90,
       successRate: 0.99,
       trend: 'stable',
+      p50LatencyMs: 120,
+      p95LatencyMs: 340,
     },
     {
       name: 'Self-Healing API Agent',
@@ -239,6 +368,8 @@ export const platformMetrics: PlatformMetrics = {
       avgConfidenceScore: 0.95,
       successRate: 0.97,
       trend: 'up',
+      p50LatencyMs: 95,
+      p95LatencyMs: 280,
     },
   ],
 

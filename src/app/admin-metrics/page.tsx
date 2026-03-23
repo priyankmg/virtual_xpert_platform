@@ -6,11 +6,13 @@ import { platformMetrics } from '@/data/mock/platform-metrics';
 import {
   Users, TrendingUp, TrendingDown, BarChart3, Bot, ShieldCheck,
   AlertTriangle, ChevronDown, ChevronUp, CheckCircle2, XCircle,
-  Star, Activity, Minus, ArrowUp, ArrowDown,
+  Star, Activity, Minus, ArrowUp, ArrowDown, Timer, Target,
+  Percent, Sparkles, Layers,
 } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, Legend, ReferenceLine,
+  BarChart, Bar,
 } from 'recharts';
 
 const p = platformMetrics;
@@ -231,8 +233,8 @@ export default function AdminMetricsPage() {
             ))}
           </div>
 
-          {/* Summary strip */}
-          <div className="card p-4 mt-4 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+          {/* Summary strip — 6 cards (spec) */}
+          <div className="card p-4 mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-[var(--brand-blue)]">{p.totalInvited}</div>
               <div className="text-xs text-[var(--text-muted)] mt-0.5">Total Invited</div>
@@ -246,8 +248,20 @@ export default function AdminMetricsPage() {
               <div className="text-xs text-[var(--text-muted)] mt-0.5">Activation Rate</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-amber-600">{p.funnel[5].count + p.funnel[6].count}</div>
-              <div className="text-xs text-[var(--text-muted)] mt-0.5">At Risk + Churned</div>
+              <div className="text-2xl font-bold text-[#00875A]">{Math.round(p.funnelSummary.sessionCompletionRate * 100)}%</div>
+              <div className="text-xs text-[var(--text-muted)] mt-0.5">Session Completion Rate</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-[var(--brand-blue)]">{Math.round(p.funnelSummary.firstSessionResolutionRate * 100)}%</div>
+              <div className="text-xs text-[var(--text-muted)] mt-0.5">First Session Resolution Rate</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-[var(--text-primary)] flex items-center justify-center gap-1">
+                <Timer size={18} className="text-[var(--text-muted)] opacity-80" />
+                {p.funnelSummary.avgSessionPrepMinutes}
+                <span className="text-sm font-semibold text-[var(--text-muted)]">min</span>
+              </div>
+              <div className="text-xs text-[var(--text-muted)] mt-0.5">Avg Session Prep Time</div>
             </div>
           </div>
         </div>
@@ -320,6 +334,71 @@ export default function AdminMetricsPage() {
           </div>
         </div>
 
+        {/* ── Conversion Metrics (spec) ── */}
+        <div>
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
+            <Percent size={16} className="text-[var(--brand-blue)]" />
+            Conversion Metrics
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="card p-5 text-center border-t-4" style={{ borderTopColor: '#0077C5' }}>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Session Completion Rate</div>
+              <div className="text-3xl font-bold text-[var(--brand-blue)]">{Math.round(p.conversion.sessionCompletionRate * 100)}%</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Scheduled → held &amp; closed</div>
+            </div>
+            <div className="card p-5 text-center border-t-4" style={{ borderTopColor: '#00875A' }}>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">First Session Resolution Rate</div>
+              <div className="text-3xl font-bold text-[#00875A]">{Math.round(p.conversion.firstSessionResolutionRate * 100)}%</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">No follow-up within 7 days</div>
+            </div>
+            <div className="card p-5 text-center border-t-4" style={{ borderTopColor: '#00B8D9' }}>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Brief-to-Session Conversion</div>
+              <div className="text-3xl font-bold" style={{ color: '#00B8D9' }}>{Math.round(p.conversion.briefToSessionConversion * 100)}%</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Brief generated → live session</div>
+            </div>
+            <div className="card p-5 text-center border-t-4" style={{ borderTopColor: '#FF6900' }}>
+              <div className="text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wide mb-1">Expert Readiness Score</div>
+              <div className="text-3xl font-bold text-[var(--text-primary)]">{p.conversion.expertReadinessScore}</div>
+              <div className="text-[11px] text-[var(--text-muted)] mt-1">Composite 0–100 (prep + policy)</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Atlas Impact — cohort comparison (spec) ── */}
+        <div>
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
+            <Target size={16} className="text-[var(--brand-blue)]" />
+            Atlas Impact — Cohort Comparison
+          </h2>
+          <p className="text-xs text-[var(--text-muted)] mb-4">
+            Matched cohorts: experts with <strong className="text-[var(--text-secondary)]">≥90 days</strong> on platform · control = historical pre-Atlas baseline where noted.
+          </p>
+          <div className="card overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-100 border-b border-[var(--border-color)]">
+                    <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Metric</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold uppercase tracking-wider" style={{ color: '#0077C5' }}>With Atlas</th>
+                    <th className="text-center px-4 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Without Atlas</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden md:table-cell">Notes</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--border-color)]">
+                  {p.atlasImpactCohort.map((row, i) => (
+                    <tr key={i} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-5 py-3 font-medium text-[var(--text-primary)]">{row.metric}</td>
+                      <td className="px-4 py-3 text-center font-semibold" style={{ color: '#0077C5' }}>{row.withAtlas}</td>
+                      <td className="px-4 py-3 text-center text-[var(--text-secondary)]">{row.withoutAtlas}</td>
+                      <td className="px-4 py-3 text-xs text-[var(--text-muted)] hidden md:table-cell">{row.notes ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
         {/* ── Section 3: AI Agent Effectiveness ── */}
         <div>
           <h2 className="text-base font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
@@ -333,11 +412,13 @@ export default function AdminMetricsPage() {
                 <thead>
                   <tr className="bg-slate-50 border-b border-[var(--border-color)]">
                     <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Agent</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Total Calls</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Per Session</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">Confidence</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden md:table-cell">Success</th>
-                    <th className="text-center px-4 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Trend</th>
+                    <th className="text-center px-3 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Total Calls</th>
+                    <th className="text-center px-3 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Per Session</th>
+                    <th className="text-center px-3 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden lg:table-cell">p50 Latency</th>
+                    <th className="text-center px-3 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden lg:table-cell">p95 Latency</th>
+                    <th className="text-center px-3 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden sm:table-cell">Confidence</th>
+                    <th className="text-center px-3 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider hidden md:table-cell">Success</th>
+                    <th className="text-center px-3 py-3 text-xs font-semibold text-[var(--text-muted)] uppercase tracking-wider">Trend</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[var(--border-color)]">
@@ -350,15 +431,17 @@ export default function AdminMetricsPage() {
                           <div className="font-medium text-[var(--text-primary)]">{a.name}</div>
                           <div className="text-xs text-[var(--text-muted)] mt-0.5 hidden sm:block">{a.description}</div>
                         </td>
-                        <td className="px-4 py-3 text-center font-semibold text-[var(--text-primary)]">{a.totalCalls.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-center text-[var(--text-secondary)]">{a.perSessionAvg.toFixed(2)}×</td>
-                        <td className={`px-4 py-3 text-center font-semibold hidden sm:table-cell ${confColor}`}>
+                        <td className="px-3 py-3 text-center font-semibold text-[var(--text-primary)]">{a.totalCalls.toLocaleString()}</td>
+                        <td className="px-3 py-3 text-center text-[var(--text-secondary)]">{a.perSessionAvg.toFixed(2)}×</td>
+                        <td className="px-3 py-3 text-center text-[var(--text-secondary)] tabular-nums hidden lg:table-cell">{a.p50LatencyMs.toLocaleString()} ms</td>
+                        <td className="px-3 py-3 text-center text-[var(--text-secondary)] tabular-nums hidden lg:table-cell">{a.p95LatencyMs.toLocaleString()} ms</td>
+                        <td className={`px-3 py-3 text-center font-semibold hidden sm:table-cell ${confColor}`}>
                           {Math.round(a.avgConfidenceScore * 100)}%
                         </td>
-                        <td className={`px-4 py-3 text-center font-semibold hidden md:table-cell ${succColor}`}>
+                        <td className={`px-3 py-3 text-center font-semibold hidden md:table-cell ${succColor}`}>
                           {Math.round(a.successRate * 100)}%
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-3 py-3 text-center">
                           {a.trend === 'up'   && <span className="inline-flex items-center gap-0.5 text-green-600 text-xs"><ArrowUp size={12} />Improving</span>}
                           {a.trend === 'down' && <span className="inline-flex items-center gap-0.5 text-red-500 text-xs"><ArrowDown size={12} />Declining</span>}
                           {a.trend === 'stable' && <span className="text-slate-400 text-xs">Stable</span>}
@@ -373,6 +456,123 @@ export default function AdminMetricsPage() {
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500 inline-block" />Confidence ≥88% — strong</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />80–88% — monitor</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400 inline-block" />&lt;80% — needs attention</span>
+              <span className="hidden lg:inline text-slate-400">|</span>
+              <span className="hidden lg:inline">p50 / p95 = round-trip latency (ms)</span>
+            </div>
+          </div>
+
+          {/* RAG declining confidence — alert (spec) */}
+          <div
+            className="mt-4 rounded-xl border-2 px-5 py-4 flex flex-col sm:flex-row sm:items-start gap-3"
+            style={{ background: '#FEF2F2', borderColor: '#FECACA' }}
+          >
+            <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center shrink-0">
+              <AlertTriangle size={20} className="text-red-600" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="font-semibold text-red-900 text-sm">{p.ragConfidenceAlert.headline}</div>
+              <div className="text-xs text-red-800/90 mt-1 leading-relaxed">{p.ragConfidenceAlert.detail}</div>
+              <div className="flex flex-wrap gap-3 mt-2 text-[11px] font-medium text-red-700">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 border border-red-200">
+                  Δ confidence {p.ragConfidenceAlert.confidenceDeltaPp > 0 ? '+' : ''}{p.ragConfidenceAlert.confidenceDeltaPp} pp
+                </span>
+                <span className="text-red-600/80">{p.ragConfidenceAlert.periodCompare}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Expert Performance Distribution (3-bucket bar) ── */}
+        <div>
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
+            <Sparkles size={16} className="text-[var(--brand-blue)]" />
+            Expert Performance Distribution
+          </h2>
+          <p className="text-xs text-[var(--text-muted)] mb-4">
+            Weekly composite score from CSAT, prep time, governance throughput, and Atlas adoption — {p.totalSessionsInPeriod} sessions in period.
+          </p>
+          <div className="card p-5">
+            <div className="flex h-12 rounded-lg overflow-hidden border border-[var(--border-color)] mb-4">
+              {p.expertPerformanceDistribution.map(b => (
+                <div
+                  key={b.label}
+                  className="flex flex-col items-center justify-center text-white text-xs font-semibold px-1 transition-all hover:opacity-95"
+                  style={{ width: `${b.pct}%`, background: b.color, minWidth: '12%' }}
+                  title={`${b.label}: ${b.count} experts (${b.pct}%)`}
+                >
+                  <span className="hidden sm:inline text-[10px] opacity-90">{b.shortLabel}</span>
+                  <span className="text-sm font-bold">{b.pct}%</span>
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {p.expertPerformanceDistribution.map(b => (
+                <div key={b.label} className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-[var(--border-color)]">
+                  <span className="w-3 h-3 rounded-full shrink-0" style={{ background: b.color }} />
+                  <div>
+                    <div className="text-sm font-semibold text-[var(--text-primary)]">{b.label}</div>
+                    <div className="text-xs text-[var(--text-muted)]">{b.count} experts · {b.pct}%</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Feature Adoption Depth ── */}
+        <div>
+          <h2 className="text-base font-semibold text-[var(--text-primary)] mb-2 flex items-center gap-2">
+            <Layers size={16} className="text-[var(--brand-blue)]" />
+            Feature Adoption Depth
+          </h2>
+          <p className="text-xs text-[var(--text-muted)] mb-4">
+            <strong className="text-[var(--text-secondary)]">Shallow</strong> = single visit / one screen ·{' '}
+            <strong className="text-[var(--text-secondary)]">Deep</strong> = multi-step workflow or repeat use in period.
+          </p>
+          <div className="card p-5">
+            <div style={{ height: Math.max(220, p.featureAdoptionDepth.length * 44) }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  layout="vertical"
+                  data={p.featureAdoptionDepth.map(d => ({
+                    name: d.feature.length > 28 ? d.feature.slice(0, 26) + '…' : d.feature,
+                    full: d.feature,
+                    shallow: d.shallowPct,
+                    deep: d.deepPct,
+                  }))}
+                  margin={{ top: 8, right: 16, left: 8, bottom: 8 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" horizontal={false} />
+                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: '#94A3B8' }} unit="%" />
+                  <YAxis
+                    type="category"
+                    dataKey="name"
+                    width={148}
+                    tick={{ fontSize: 10, fill: '#64748B' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    formatter={(value, name) => {
+                      const v = typeof value === 'number' ? value : Number(value);
+                      const label = String(name) === 'shallow' ? 'Shallow' : 'Deep';
+                      return [`${Number.isFinite(v) ? v : 0}%`, label];
+                    }}
+                    contentStyle={{ borderRadius: 10, border: '1px solid #E2E8F0', fontSize: 12 }}
+                    labelFormatter={(_l, payload) => (Array.isArray(payload) && payload[0] && 'payload' in payload[0] ? (payload[0] as { payload?: { full?: string } }).payload?.full : undefined) ?? ''}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+                  <Bar dataKey="shallow" stackId="ad" fill="#CBD5E1" name="Shallow" radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="deep" stackId="ad" fill="#0077C5" name="Deep" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 px-4 py-3 rounded-lg border flex items-start gap-2" style={{ background: '#EFF6FF', borderColor: '#BFDBFE' }}>
+              <Star size={14} className="text-[var(--brand-blue)] shrink-0 mt-0.5" />
+              <p className="text-xs text-slate-700 leading-relaxed">
+                <span className="font-semibold text-[var(--brand-blue)]">Retention insight: </span>
+                {p.featureAdoptionRetentionInsight}
+              </p>
             </div>
           </div>
         </div>

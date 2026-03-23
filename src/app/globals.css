@@ -60,6 +60,22 @@
     font-weight: 600;
   }
 
+  .sidebar-nav-subitem {
+    @apply flex items-center gap-2.5 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-all duration-150 ml-6 border-l-2 border-slate-200;
+    color: var(--text-secondary);
+    &:hover {
+      background: var(--bg-page);
+      color: var(--text-primary);
+    }
+  }
+
+  .sidebar-nav-subitem.active {
+    background: var(--brand-blue-light);
+    color: var(--brand-blue);
+    font-weight: 600;
+    border-left-color: var(--brand-blue);
+  }
+
   /* ── Cards ── */
   .card {
     background-color: var(--bg-card);

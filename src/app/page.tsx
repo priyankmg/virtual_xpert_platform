@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Clock, CheckCircle2, Circle, Loader2, AlertTriangle,
-  ChevronRight, Play, Sparkles, Star, TrendingUp,
+  ChevronRight, ChevronDown, Play, Sparkles, Star, TrendingUp,
   Users, Calendar, ShieldCheck, Zap, BarChart3,
-  ChevronDown, Check,
+  Check, ClipboardList,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import { SessionItem, ExpertProfile, sessionStats as mockStats, todaySessions as mockSessions } from '@/data/mock/expert-sessions';
@@ -62,6 +62,22 @@ const RISK_CONFIG: Record<SessionItem['riskLevel'], { badge: string }> = {
   MEDIUM: { badge: 'bg-amber-100 text-amber-700 border border-amber-200' },
   LOW:    { badge: 'bg-green-100 text-green-700 border border-green-200' },
 };
+
+/** Sort key for today's session times e.g. "2:00 PM" */
+function parseTimeToMinutes(t: string): number {
+  const m = t.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+  if (!m) return 0;
+  let h = parseInt(m[1]!, 10);
+  const min = parseInt(m[2]!, 10);
+  const ap = m[3]!.toUpperCase();
+  if (ap === 'PM' && h !== 12) h += 12;
+  if (ap === 'AM' && h === 12) h = 0;
+  return h * 60 + min;
+}
+
+function sortSessionsByTime(list: SessionItem[]): SessionItem[] {
+  return [...list].sort((a, b) => parseTimeToMinutes(a.scheduledTime) - parseTimeToMinutes(b.scheduledTime));
+}
 
 function ClientSelector({ sessions, selectedId, onChange }: {
   sessions: SessionItem[];
@@ -299,6 +315,18 @@ export default function DashboardPage() {
 
   const activeSession = sessions.find(s => s.status === 'IN_PROGRESS');
 
+  const { upcomingSessions, completedSessions } = useMemo(() => {
+    const completed = sessions.filter(s => s.status === 'COMPLETED');
+    const upcoming = sessions.filter(s => s.status !== 'COMPLETED');
+    return {
+      upcomingSessions: sortSessionsByTime(upcoming),
+      completedSessions: sortSessionsByTime(completed),
+    };
+  }, [sessions]);
+
+  const [upcomingOpen, setUpcomingOpen] = useState(false);
+  const [completedOpen, setCompletedOpen] = useState(false);
+
   return (
     <>
       <Header
@@ -369,10 +397,10 @@ export default function DashboardPage() {
 
         {/* Active Session Banner */}
         {activeSession && (
-          <div className="mb-6 p-4 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
-              <div>
+          <div className="mb-6 p-4 sm:p-5 rounded-xl bg-blue-50 border border-blue-200 flex flex-col gap-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
+              <div className="min-w-0">
                 <span className="font-semibold text-blue-800">Active: </span>
                 <span className="text-blue-700">{activeSession.clientName} — {activeSession.topic}</span>
               </div>
@@ -383,14 +411,56 @@ export default function DashboardPage() {
                 </span>
               )}
             </div>
-            <Link
-              href={`/session-live/${activeSession.clientId}`}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[var(--brand-blue)] text-white text-sm font-medium hover:bg-[var(--brand-blue-dark)] transition-colors"
-            >
-              <Zap size={14} />
-              Enter Live Session
-              <ChevronRight size={14} />
-            </Link>
+
+            <div className="rounded-lg bg-white/80 border border-blue-100 p-3 sm:p-4">
+              <p className="text-xs font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[var(--brand-blue)] text-white text-[10px]">1</span>
+                Suggested workflow — start with <span className="text-[var(--brand-blue)]">Client analysis</span> before going live
+              </p>
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-stretch sm:justify-center gap-2 sm:gap-1">
+                  <Link
+                    href={`/session-prep/${activeSession.clientId}`}
+                    className="group flex-1 flex flex-col sm:flex-row items-center gap-2 px-3 py-3 rounded-xl border-2 border-[var(--brand-blue)] bg-[var(--brand-blue-light)] text-[var(--brand-blue)] shadow-sm hover:border-[var(--brand-blue-dark)] hover:shadow transition-all min-h-[88px] sm:min-h-0 justify-center text-center sm:text-left"
+                  >
+                    <BarChart3 size={20} className="shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--brand-blue)]">Step 1 · Start here</div>
+                      <div className="text-sm font-semibold text-[var(--text-primary)]">Client analysis</div>
+                      <div className="text-[11px] text-[var(--text-secondary)] mt-0.5 hidden sm:block">Prep, data & context</div>
+                    </div>
+                  </Link>
+                  <ChevronRight className="hidden sm:flex self-center text-blue-300 shrink-0 w-5 h-5" aria-hidden />
+                  <ChevronDown className="sm:hidden self-center text-blue-300 w-5 h-5" aria-hidden />
+
+                  <Link
+                    href="/governance"
+                    className="group flex-1 flex flex-col sm:flex-row items-center gap-2 px-3 py-3 rounded-xl border border-[var(--border-color)] bg-white text-[var(--text-secondary)] hover:border-[var(--brand-blue)] hover:bg-slate-50/80 transition-all min-h-[88px] sm:min-h-0 justify-center text-center sm:text-left"
+                  >
+                    <ClipboardList size={20} className="shrink-0 text-[var(--brand-blue)]" />
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)]">Step 2</div>
+                      <div className="text-sm font-semibold text-[var(--text-primary)]">Review & actions</div>
+                      <div className="text-[11px] text-[var(--text-muted)] mt-0.5 hidden sm:block">Governance & approvals</div>
+                    </div>
+                  </Link>
+                  <ChevronRight className="hidden sm:flex self-center text-blue-300 shrink-0 w-5 h-5" aria-hidden />
+                  <ChevronDown className="sm:hidden self-center text-blue-300 w-5 h-5" aria-hidden />
+
+                  <Link
+                    href={`/session-live/${activeSession.clientId}`}
+                    className="group flex-1 flex flex-col sm:flex-row items-center gap-2 px-3 py-3 rounded-xl border border-[var(--border-color)] bg-white text-[var(--text-secondary)] hover:border-[var(--brand-blue)] hover:bg-slate-50/80 transition-all min-h-[88px] sm:min-h-0 justify-center text-center sm:text-left"
+                  >
+                    <Zap size={20} className="shrink-0 text-[var(--accent-orange)]" />
+                    <div className="min-w-0">
+                      <div className="text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)]">Step 3</div>
+                      <div className="text-sm font-semibold text-[var(--text-primary)]">Live session</div>
+                      <div className="text-[11px] text-[var(--text-muted)] mt-0.5 hidden sm:block">Real-time with client</div>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -418,7 +488,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Session Queue */}
+        {/* Session Queue — collapsible upcoming + completed */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-[var(--text-primary)] flex items-center gap-2">
@@ -440,16 +510,130 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {sessions.map(session => (
-                <SessionCard
-                  key={session.sessionId}
-                  session={session}
-                  onRunBrief={handleRunBrief}
-                  isSelected={selectedClient?.clientId === session.clientId}
-                  onSelect={handleSelectSession}
-                />
-              ))}
+            <div className="space-y-3">
+              {/* Upcoming (non-completed) — calendar-style by time */}
+              <div className="card overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setUpcomingOpen(o => !o)}
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-slate-50/80 transition-colors border-b border-[var(--border-color)]"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-[var(--brand-blue-light)] flex items-center justify-center shrink-0">
+                      <Clock size={18} className="text-[var(--brand-blue)]" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-[var(--text-primary)]">Upcoming sessions</div>
+                      <div className="text-xs text-[var(--text-muted)]">Sorted by time of day · includes in-progress &amp; scheduled</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-[var(--brand-blue-light)] text-[var(--brand-blue)]">
+                      {upcomingSessions.length}
+                    </span>
+                    <ChevronDown
+                      size={18}
+                      className={`text-[var(--text-muted)] transition-transform ${upcomingOpen ? 'rotate-180' : ''}`}
+                    />
+                  </div>
+                </button>
+                {upcomingOpen && (
+                  <div className="p-4 sm:p-5 bg-[var(--bg-page)]">
+                    {upcomingSessions.length === 0 ? (
+                      <p className="text-sm text-[var(--text-muted)] text-center py-6">No upcoming sessions today.</p>
+                    ) : (
+                      <div className="space-y-0">
+                        <div className="hidden sm:grid sm:grid-cols-[88px_1fr] gap-3 text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)] px-1 pb-2 border-b border-[var(--border-color)] mb-3">
+                          <span>Time</span>
+                          <span>Session</span>
+                        </div>
+                        {upcomingSessions.map(session => (
+                          <div
+                            key={session.sessionId}
+                            className="grid grid-cols-1 sm:grid-cols-[88px_1fr] gap-3 sm:gap-4 py-4 border-b border-[var(--border-color)] last:border-0 last:pb-0 first:pt-0"
+                          >
+                            <div className="flex sm:flex-col sm:items-start gap-2">
+                              <span className="sm:hidden text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)]">Time</span>
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-[var(--border-color)] text-sm font-semibold text-[var(--text-primary)] tabular-nums shadow-sm">
+                                <Clock size={12} className="text-[var(--brand-blue)] shrink-0" />
+                                {session.scheduledTime}
+                              </div>
+                            </div>
+                            <SessionCard
+                              session={session}
+                              onRunBrief={handleRunBrief}
+                              isSelected={selectedClient?.clientId === session.clientId}
+                              onSelect={handleSelectSession}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Completed */}
+              <div className="card overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setCompletedOpen(o => !o)}
+                  className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-slate-50/80 transition-colors border-b border-[var(--border-color)]"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
+                      <CheckCircle2 size={18} className="text-green-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold text-[var(--text-primary)]">Completed sessions</div>
+                      <div className="text-xs text-[var(--text-muted)]">Wrapped for today</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-50 text-green-700">
+                      {completedSessions.length}
+                    </span>
+                    <ChevronDown
+                      size={18}
+                      className={`text-[var(--text-muted)] transition-transform ${completedOpen ? 'rotate-180' : ''}`}
+                    />
+                  </div>
+                </button>
+                {completedOpen && (
+                  <div className="p-4 sm:p-5 bg-[var(--bg-page)]">
+                    {completedSessions.length === 0 ? (
+                      <p className="text-sm text-[var(--text-muted)] text-center py-6">No completed sessions yet.</p>
+                    ) : (
+                      <div className="space-y-0">
+                        <div className="hidden sm:grid sm:grid-cols-[88px_1fr] gap-3 text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)] px-1 pb-2 border-b border-[var(--border-color)] mb-3">
+                          <span>Time</span>
+                          <span>Session</span>
+                        </div>
+                        {completedSessions.map(session => (
+                          <div
+                            key={session.sessionId}
+                            className="grid grid-cols-1 sm:grid-cols-[88px_1fr] gap-3 sm:gap-4 py-4 border-b border-[var(--border-color)] last:border-0 last:pb-0 first:pt-0"
+                          >
+                            <div className="flex sm:flex-col sm:items-start gap-2">
+                              <span className="sm:hidden text-[10px] font-bold uppercase tracking-wide text-[var(--text-muted)]">Time</span>
+                              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-[var(--border-color)] text-sm font-semibold text-[var(--text-primary)] tabular-nums shadow-sm">
+                                <Clock size={12} className="text-green-600 shrink-0" />
+                                {session.scheduledTime}
+                              </div>
+                            </div>
+                            <SessionCard
+                              session={session}
+                              onRunBrief={handleRunBrief}
+                              isSelected={selectedClient?.clientId === session.clientId}
+                              onSelect={handleSelectSession}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

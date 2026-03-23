@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from 'react';
 import {
   X, LayoutDashboard, Database, FileText, ShieldCheck,
   Search, Calculator, ClipboardList, Bot, Zap, Star, BarChart2,
-  Activity,
+  Activity, type LucideIcon,
 } from 'lucide-react';
 
 // ── Smart tooltip configuration ────────────────────────────────────────────────
@@ -60,19 +60,27 @@ function shouldShowTip(meta: NavTooltipMeta): boolean {
 // ── Nav items ──────────────────────────────────────────────────────────────────
 const navItems = [
   { href: '/',                    label: 'Work Queue',       icon: LayoutDashboard, section: 'expert'   },
-  { href: '/financial-snapshot',  label: 'Financial Snapshot', icon: Database,       section: 'client'   },
-  { href: '/session-brief',       label: 'Session Brief',    icon: FileText,        section: 'client'   },
-  { href: '/policy-review',       label: 'Policy Review',    icon: ShieldCheck,     section: 'client'   },
-  { href: '/precedents',          label: 'IRS Precedents',   icon: Search,          section: 'client'   },
-  { href: '/tax-estimate',        label: 'Tax Estimate',     icon: Calculator,      section: 'client'   },
   { href: '/governance',          label: 'Governance Log',   icon: ClipboardList,   section: 'platform' },
   { href: '/agents',              label: 'Agent Panel',      icon: Bot,             section: 'platform' },
   { href: '/my-metrics',          label: 'My Metrics',       icon: BarChart2,       section: 'platform' },
   { href: '/admin-metrics',       label: 'Admin Metrics',    icon: Activity,        section: 'platform', adminOnly: true },
 ];
 
+/** Session Brief first; sub-items are analysis views under that workflow. */
+const clientAnalysisGroup: {
+  parent: { href: string; label: string; icon: LucideIcon };
+  children: { href: string; label: string; icon: LucideIcon }[];
+} = {
+  parent: { href: '/session-brief', label: 'Session Brief', icon: FileText },
+  children: [
+    { href: '/financial-snapshot', label: 'Financial Snapshot', icon: Database },
+    { href: '/policy-review', label: 'Policy Review', icon: ShieldCheck },
+    { href: '/precedents', label: 'IRS Precedents', icon: Search },
+    { href: '/tax-estimate', label: 'Tax Estimate', icon: Calculator },
+  ],
+};
+
 const expertSectionItems  = navItems.filter(i => i.section === 'expert');
-const clientSectionItems  = navItems.filter(i => i.section === 'client');
 const platformSectionItems = navItems.filter(i => i.section === 'platform');
 
 // ── SmartTip dot component ─────────────────────────────────────────────────────
@@ -186,6 +194,34 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     );
   }
 
+  function NavSubLink({
+    href,
+    label,
+    icon: Icon,
+  }: {
+    href: string;
+    label: string;
+    icon: LucideIcon;
+  }) {
+    const isActive = pathname === href || pathname.startsWith(href + '/');
+    const meta = NAV_TOOLTIPS[href];
+    const showTip = !!meta && !!activeTips[href];
+
+    return (
+      <Link
+        href={href}
+        onClick={onClose}
+        className={`sidebar-nav-subitem ${isActive ? 'active' : ''}`}
+      >
+        <Icon size={15} className="flex-shrink-0 opacity-90" />
+        <span className="truncate flex-1">{label}</span>
+        {showTip && (
+          <SmartTipDot meta={meta} onDismiss={() => dismissTip(href)} />
+        )}
+      </Link>
+    );
+  }
+
   return (
     <>
       {open && (
@@ -262,7 +298,16 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
           <div className="section-title px-3 mb-2">Client Analysis</div>
           <div className="space-y-0.5 mb-4">
-            {clientSectionItems.map(item => <NavLink key={item.href} {...item} />)}
+            <NavLink
+              href={clientAnalysisGroup.parent.href}
+              label={clientAnalysisGroup.parent.label}
+              icon={clientAnalysisGroup.parent.icon}
+            />
+            <div className="space-y-0.5 pl-1">
+              {clientAnalysisGroup.children.map(child => (
+                <NavSubLink key={child.href} href={child.href} label={child.label} icon={child.icon} />
+              ))}
+            </div>
           </div>
 
           <div className="section-title px-3 mb-2">Platform</div>

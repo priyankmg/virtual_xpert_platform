@@ -5,9 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   ArrowLeft, Play, CheckCircle2, Loader2, Sparkles, AlertTriangle,
-  ChevronDown, ChevronUp, ChevronRight, Bot, Send, User,
-  BookOpen, TrendingUp, ShieldCheck,
-  Check, Info, ExternalLink,
+  ChevronDown, ChevronUp, Bot, Send, User,
+  BookOpen,
+  Check, Info,
 } from 'lucide-react';
 import Header from '@/components/layout/Header';
 import { todaySessions, clientHistory } from '@/data/mock/expert-sessions';
@@ -29,64 +29,6 @@ const PREP_STEPS = [
   { id: 'tax_classify', label: 'Generating 3-scenario tax estimate', duration: 900 },
   { id: 'governance', label: 'Classifying actions — 3 require expert confirmation', duration: 500 },
 ];
-
-// ── Mock brief output ────────────────────────────────────────────────────────
-const MOCK_SUMMARY = {
-  executive: `Meridian Home Goods is entering Q4 2025 in a strong financial position — net income YTD of $1.87M represents a 12% increase over prior year, driven by revenue growth to $12.4M. However, three material risks require expert attention before year-end: (1) potential contractor misclassification of 2 workers with estimated FICA exposure of $38K–$54K, (2) $42K in Expensify expenses with ambiguous business-personal purpose that may be disallowed in audit, and (3) a Q4 estimated tax payment of approximately $78,400 due January 15.`,
-  keyMetrics: [
-    { label: 'Net Income YTD', value: '$1,870,000', trend: '+12%', flag: false },
-    { label: 'Annual Revenue', value: '$12,400,000', trend: '+18%', flag: false },
-    { label: 'Total Payroll', value: '$3,200,000', trend: null, flag: false },
-    { label: 'Flagged Expenses', value: '$42,000', trend: null, flag: true },
-    { label: 'Est. Q4 Tax Due', value: '$78,400', trend: null, flag: true },
-    { label: 'Contractor Risk', value: '$38K–$54K', trend: null, flag: true },
-  ],
-  policyFindings: [
-    {
-      id: 'pf-001',
-      risk: 'HIGH',
-      title: 'Contractor Misclassification Risk',
-      description: '2 of 7 contractors fail the behavioral and economic control tests under IRC §3401. IRS precedent TC-2019-0124 resulted in $180K assessment for similar S-Corp.',
-      recommendation: 'Reclassify as W-2 employees in ADP before year-end. File corrected 941s if needed.',
-      requiresApproval: true,
-      precedent: 'TC-2019-0124',
-    },
-    {
-      id: 'pf-002',
-      risk: 'HIGH',
-      title: 'Flagged Expensify Expenses — $42K',
-      description: '$42,000 in expense reports lack sufficient business purpose documentation. Risk of full disallowance under IRC §274 if audited.',
-      recommendation: 'Request receipts and business purpose documentation for all flagged items before filing.',
-      requiresApproval: true,
-      precedent: 'TC-2018-0156',
-    },
-    {
-      id: 'pf-003',
-      risk: 'MEDIUM',
-      title: 'S-Corp Reasonable Compensation Review',
-      description: "Owner salary of $95K is within acceptable range per QuickBooks Live benchmarks, but should be documented annually. IRS scrutinizes S-Corp distributions.",
-      recommendation: 'Maintain written compensation policy and document rationale for current salary level.',
-      requiresApproval: false,
-      precedent: 'TC-2021-0087',
-    },
-    {
-      id: 'pf-004',
-      risk: 'LOW',
-      title: 'Section 179 Opportunity — Delivery Van ($38K)',
-      description: 'Delivery van purchased Q3 2025 qualifies for full Section 179 expensing, reducing taxable income by $38,000.',
-      recommendation: 'Elect Section 179 on Form 4562. Client must confirm asset is used >50% for business.',
-      requiresApproval: true,
-      precedent: null,
-    },
-  ],
-  taxEstimate: {
-    conservative: 312400,
-    base: 287600,
-    optimistic: 241800,
-    q4Payment: 78400,
-    priorYearEffectiveRate: '21.3%',
-  },
-};
 
 // ── Chat panel ────────────────────────────────────────────────────────────────
 interface Message { id: string; role: 'user' | 'assistant'; content: string; timestamp: Date; }
@@ -206,7 +148,7 @@ function AssistantPanel({ clientId }: { clientId: string }) {
 }
 
 // ── Main Page ─────────────────────────────────────────────────────────────────
-type PrepPhase = 'idle' | 'running' | 'done';
+type PrepPhase = 'idle' | 'running';
 
 export default function SessionPrepPage() {
   const params = useParams();
@@ -219,8 +161,6 @@ export default function SessionPrepPage() {
   const [phase, setPhase] = useState<PrepPhase>('idle');
   const [currentStep, setCurrentStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
-  const [briefConfirmed, setBriefConfirmed] = useState(false);
-  const [expandedFinding, setExpandedFinding] = useState<string | null>(null);
   const [historyExpanded, setHistoryExpanded] = useState(false);
 
   // Set context when page loads
@@ -232,10 +172,10 @@ export default function SessionPrepPage() {
         entityType: session.entityType,
         sessionId: session.sessionId,
         sessionTopic: session.topic,
-        briefStatus: phase === 'done' ? 'BRIEF_COMPLETE' : session.status as 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED',
+        briefStatus: session.status as 'NOT_STARTED' | 'BRIEF_COMPLETE' | 'IN_PROGRESS' | 'COMPLETED',
       });
     }
-  }, [session, phase, setSelectedClient]);
+  }, [session, setSelectedClient]);
 
   async function runPrep() {
     setPhase('running');
@@ -255,11 +195,6 @@ export default function SessionPrepPage() {
       body: JSON.stringify({ clientId }),
     }).catch(() => {});
 
-    setPhase('done');
-  }
-
-  function confirmReady() {
-    setBriefConfirmed(true);
     if (session) {
       setSelectedClient({
         clientId: session.clientId,
@@ -270,6 +205,8 @@ export default function SessionPrepPage() {
         briefStatus: 'BRIEF_COMPLETE',
       });
     }
+
+    router.push('/session-brief');
   }
 
   const lastSession = history?.communications[0];
@@ -428,7 +365,7 @@ export default function SessionPrepPage() {
               Atlas will aggregate data from all 6 connected source systems and run the full AI agent pipeline to generate your session brief.
             </p>
             <p className="text-xs text-[var(--text-muted)] mb-8 max-w-sm mx-auto">
-              Estimated time: ~15 seconds · Covers financial summary, policy review, IRS precedents, and 3-scenario tax estimate
+              Estimated time: ~15 seconds · When complete, you&apos;ll open the <strong className="text-[var(--text-secondary)]">Session Brief</strong> page with the full summary, policy findings, precedents, and tax estimate
             </p>
             <div className="flex items-center justify-center gap-3 flex-wrap">
               {['QuickBooks', 'ADP Payroll', 'Expensify', 'Stripe', 'Inventory', 'Tax Returns'].map(s => (
@@ -495,182 +432,6 @@ export default function SessionPrepPage() {
                 );
               })}
             </div>
-          </div>
-        )}
-
-        {/* ── PHASE: done — full brief ── */}
-        {phase === 'done' && (
-          <div className="space-y-6">
-
-            {/* AI Summary banner */}
-            <div className="p-4 rounded-xl bg-purple-50 border border-purple-200 flex items-start gap-3">
-              <Bot size={18} className="text-purple-600 shrink-0 mt-0.5" />
-              <div>
-                <div className="flex items-center gap-2 mb-1 flex-wrap">
-                  <span className="text-sm font-semibold text-purple-800">AI-Generated Session Brief</span>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 border border-purple-200">claude-opus-4-5</span>
-                  <span className="text-xs text-purple-600">· Generated {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-                <p className="text-xs text-purple-700">This brief was generated by Atlas AI agents from live source system data. All recommendations require expert review before being shared with the client. Confidence scores are shown per finding.</p>
-              </div>
-            </div>
-
-            {/* Executive Summary */}
-            <div className="card p-6">
-              <h3 className="font-semibold text-[var(--text-primary)] mb-3 flex items-center gap-2">
-                <Sparkles size={16} className="text-[var(--accent-orange)]" />
-                Executive Summary
-              </h3>
-              <p className="text-sm text-[var(--text-secondary)] leading-relaxed">{MOCK_SUMMARY.executive}</p>
-            </div>
-
-            {/* Key Metrics */}
-            <div className="card p-6">
-              <h3 className="font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <TrendingUp size={16} className="text-[var(--brand-blue)]" />
-                Key Metrics
-              </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {MOCK_SUMMARY.keyMetrics.map(m => (
-                  <div key={m.label} className={`p-3 rounded-lg border ${m.flag ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200'}`}>
-                    <div className={`text-lg font-bold ${m.flag ? 'text-red-700' : 'text-[var(--text-primary)]'}`}>{m.value}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{m.label}</div>
-                    {m.trend && <div className="text-xs text-green-600 font-medium mt-1">{m.trend} vs prior year</div>}
-                    {m.flag && <div className="flex items-center gap-1 mt-1"><AlertTriangle size={10} className="text-red-500" /><span className="text-xs text-red-600">Requires attention</span></div>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Policy Findings */}
-            <div className="card p-6">
-              <h3 className="font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <ShieldCheck size={16} className="text-[var(--brand-blue)]" />
-                Policy Findings & Compliance
-              </h3>
-              <div className="space-y-3">
-                {MOCK_SUMMARY.policyFindings.map(f => {
-                  const expanded = expandedFinding === f.id;
-                  return (
-                    <div key={f.id} className={`border rounded-xl overflow-hidden transition-all ${
-                      f.risk === 'HIGH' ? 'border-red-200' :
-                      f.risk === 'MEDIUM' ? 'border-amber-200' : 'border-green-200'
-                    }`}>
-                      <button
-                        onClick={() => setExpandedFinding(expanded ? null : f.id)}
-                        className="w-full flex items-center gap-3 p-4 text-left hover:bg-slate-50 transition-colors"
-                      >
-                        <span className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-semibold border ${
-                          f.risk === 'HIGH' ? 'bg-red-100 text-red-700 border-red-200' :
-                          f.risk === 'MEDIUM' ? 'bg-amber-100 text-amber-700 border-amber-200' :
-                          'bg-green-100 text-green-700 border-green-200'
-                        }`}>{f.risk}</span>
-                        <span className="flex-1 text-sm font-medium text-[var(--text-primary)]">{f.title}</span>
-                        {f.requiresApproval && (
-                          <span className="hidden sm:inline text-xs px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 border border-orange-200 shrink-0">Needs Approval</span>
-                        )}
-                        {expanded ? <ChevronUp size={15} className="text-[var(--text-muted)] shrink-0" /> : <ChevronDown size={15} className="text-[var(--text-muted)] shrink-0" />}
-                      </button>
-                      {expanded && (
-                        <div className="px-4 pb-4 border-t border-[var(--border-color)] pt-3 space-y-3">
-                          <p className="text-sm text-[var(--text-secondary)]">{f.description}</p>
-                          <div className="p-3 rounded-lg bg-[var(--brand-blue-light)] border border-blue-200">
-                            <div className="text-xs font-semibold text-[var(--brand-blue)] mb-1">Recommendation</div>
-                            <p className="text-sm text-[var(--text-primary)]">{f.recommendation}</p>
-                          </div>
-                          {f.precedent && (
-                            <div className="flex items-center gap-2">
-                              <BookOpen size={13} className="text-[var(--text-muted)]" />
-                              <span className="text-xs text-[var(--text-muted)]">Precedent:</span>
-                              <Link href="/precedents" className="text-xs font-medium text-[var(--brand-blue)] hover:underline flex items-center gap-1">
-                                {f.precedent} <ExternalLink size={10} />
-                              </Link>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Tax Estimate */}
-            <div className="card p-6">
-              <h3 className="font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-                <TrendingUp size={16} className="text-[var(--brand-blue)]" />
-                3-Scenario Tax Estimate
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                {[
-                  { label: 'Conservative', value: MOCK_SUMMARY.taxEstimate.conservative, color: 'bg-red-50 border-red-200', text: 'text-red-700', desc: 'All flagged deductions disallowed' },
-                  { label: 'Base Case', value: MOCK_SUMMARY.taxEstimate.base, color: 'bg-blue-50 border-blue-200', text: 'text-blue-700', desc: 'Standard deductions applied' },
-                  { label: 'Optimistic', value: MOCK_SUMMARY.taxEstimate.optimistic, color: 'bg-green-50 border-green-200', text: 'text-green-700', desc: 'All deductions realized' },
-                ].map(s => (
-                  <div key={s.label} className={`p-4 rounded-xl border ${s.color} text-center`}>
-                    <div className={`text-xl font-bold ${s.text}`}>${s.value.toLocaleString()}</div>
-                    <div className="text-sm font-medium text-[var(--text-primary)] mt-1">{s.label}</div>
-                    <div className="text-xs text-[var(--text-muted)] mt-0.5">{s.desc}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
-                <AlertTriangle size={14} className="text-amber-600 shrink-0" />
-                <span className="text-sm text-amber-700">
-                  <strong>Q4 estimated payment due Jan 15:</strong> ${MOCK_SUMMARY.taxEstimate.q4Payment.toLocaleString()}
-                </span>
-              </div>
-              <p className="text-xs text-[var(--text-muted)] mt-3 italic">This estimate is for planning purposes only and does not constitute tax advice. Prior year effective rate: {MOCK_SUMMARY.taxEstimate.priorYearEffectiveRate}.</p>
-              <Link href="/tax-estimate" className="inline-flex items-center gap-1 text-sm text-[var(--brand-blue)] hover:underline mt-2">
-                View full 3-scenario model <ExternalLink size={12} />
-              </Link>
-            </div>
-
-            {/* Confirm Ready */}
-            {!briefConfirmed ? (
-              <div className="card p-6 bg-[var(--brand-blue-light)] border-[var(--brand-blue)] border-2">
-                <div className="flex items-start gap-4 flex-wrap">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-[var(--text-primary)] mb-1">Ready to start the session?</h3>
-                    <p className="text-sm text-[var(--text-secondary)]">
-                      By confirming, you acknowledge you&apos;ve reviewed the AI-generated brief and are prepared to deliver expert advice. The session status will update to <strong>Brief Complete</strong> on your work queue.
-                    </p>
-                  </div>
-                  <button
-                    onClick={confirmReady}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl bg-[var(--brand-blue)] text-white font-semibold hover:bg-[var(--brand-blue-dark)] transition-all shadow-md"
-                  >
-                    <Check size={16} />
-                    Confirm — I&apos;m Ready
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="card p-6 bg-emerald-50 border-2 border-emerald-300">
-                <div className="flex items-center justify-between gap-4 flex-wrap">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 size={24} className="text-emerald-600 shrink-0" />
-                    <div>
-                      <div className="font-semibold text-emerald-800">Pre-Brief Complete</div>
-                      <div className="text-sm text-emerald-600">Session status updated. You&apos;re ready for {session?.clientName}.</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Link href="/" className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white text-[var(--text-secondary)] text-sm font-medium hover:bg-slate-50 border border-[var(--border-color)] transition-colors">
-                      <ArrowLeft size={13} />
-                      Work Queue
-                    </Link>
-                    <Link
-                      href={`/session-live/${clientId}`}
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition-colors"
-                    >
-                      Start Session <ChevronRight size={14} />
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-
           </div>
         )}
       </main>

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Clock, CheckCircle2, Circle, Loader2, AlertTriangle,
-  ChevronRight, ChevronDown, Play, Sparkles, Star, TrendingUp,
+  ChevronRight, ChevronDown, Play, Star,
   Users, Calendar, ShieldCheck, Zap, BarChart3,
   Check, ClipboardList,
 } from 'lucide-react';
@@ -464,30 +464,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Selected Client Banner */}
-        {selectedClient && (
-          <div className="mb-6 p-3.5 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-between gap-4 flex-wrap text-sm">
-            <div className="flex items-center gap-2">
-              <Check size={15} className="text-orange-600" />
-              <span className="font-medium text-orange-800">Active Client Context:</span>
-              <span className="text-orange-700">{selectedClient.clientName}</span>
-              <span className="text-orange-500">·</span>
-              <span className="text-orange-600">{selectedClient.entityType}</span>
-              {selectedClient.sessionTopic && (
-                <>
-                  <span className="text-orange-500 hidden sm:inline">·</span>
-                  <span className="text-orange-600 hidden sm:inline">{selectedClient.sessionTopic}</span>
-                </>
-              )}
-            </div>
-            <div className="flex items-center gap-2">
-              <Link href="/financial-snapshot" className="text-[var(--brand-blue)] font-medium hover:underline flex items-center gap-1 text-xs">
-                View financial data <ChevronRight size={12} />
-              </Link>
-            </div>
-          </div>
-        )}
-
         {/* Session Queue — collapsible upcoming + completed */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -643,35 +619,6 @@ export default function DashboardPage() {
               Generating session brief… running DAS + all agents
             </div>
           )}
-        </div>
-
-        {/* Quick Links */}
-        <div>
-          <h2 className="text-lg font-semibold text-[var(--text-primary)] mb-4 flex items-center gap-2">
-            <Sparkles size={18} className="text-[var(--accent-orange)]" />
-            Quick Access
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {[
-              { href: '/session-brief', icon: <ShieldCheck size={20} />, label: 'Session Brief', desc: 'Full AI-prepared brief' },
-              { href: '/policy-review', icon: <AlertTriangle size={20} />, label: 'Policy Review', desc: 'IRS compliance findings' },
-              { href: '/tax-estimate', icon: <TrendingUp size={20} />, label: 'Tax Estimate', desc: '3-scenario model' },
-              { href: '/precedents', icon: <BarChart3 size={20} />, label: 'IRS Precedents', desc: 'RAG retrieval library' },
-              { href: '/financial-snapshot', icon: <BarChart3 size={20} />, label: 'Financial Data', desc: '6 source systems' },
-              { href: '/governance', icon: <ShieldCheck size={20} />, label: 'Governance Log', desc: 'Audit trail & approvals' },
-              { href: '/agents', icon: <Zap size={20} />, label: 'Agent Panel', desc: 'Run individual agents' },
-            ].map(link => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="card p-4 flex flex-col gap-2 hover:shadow-md transition-all group"
-              >
-                <div className="text-[var(--brand-blue)] group-hover:text-[var(--brand-blue-dark)] transition-colors">{link.icon}</div>
-                <div className="font-medium text-[var(--text-primary)] text-sm">{link.label}</div>
-                <div className="text-xs text-[var(--text-muted)]">{link.desc}</div>
-              </Link>
-            ))}
-          </div>
         </div>
 
       </main>
